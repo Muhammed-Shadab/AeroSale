@@ -41,6 +41,9 @@ public class Seller {
     @Column(length = 50)
     private String wareHousePinCode;
 
+    @Column(nullable = false)
+    private Instant DateOfBirth;
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     @Column(nullable = false)

@@ -1,0 +1,70 @@
+package com.miniProject.AeroScale.Service;
+
+import com.miniProject.AeroScale.Entity.RefreshToken;
+import com.miniProject.AeroScale.Entity.Users;
+import com.miniProject.AeroScale.Repository.RefreshTokenRespository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Base64;
+
+
+@Service
+@RequiredArgsConstructor
+public class RefreshTokenService {
+
+    @Value("${jwt.refresh-token-byteLength}")
+    public static int TOKEN_BYTE_LENGTH;
+
+    @Value("${jwt.refresh-token-expiration-ms}")
+    private Long expiresDurationInMilli;
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private final RefreshTokenRespository refreshTokenRespository;
+
+
+
+    public String generateRefreshToken(Users user, String deviceInfo, String userIp) {
+        String rawToken = generateRawToken();
+        String hash = sha256Hex(rawToken);
+
+        RefreshToken refreshToken = RefreshToken.builder()
+                .users(user)
+                .token(hash)
+                .expiresAt(Instant.now().plus(Duration.ofNanos(TOKEN_BYTE_LENGTH)))
+                .deviceInfo(deviceInfo)
+                .issuedIp(userIp)
+                .build();
+
+
+        refreshTokenRespository.save(refreshToken);
+        return rawToken;
+    }
+
+    private String generateRawToken() {
+        byte[] bytes = new byte[TOKEN_BYTE_LENGTH];
+        SECURE_RANDOM.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    private String sha256Hex(String value) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(value.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 algorithm not available", e);
+        }
+    }
+
+}

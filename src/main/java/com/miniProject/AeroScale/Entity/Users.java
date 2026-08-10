@@ -94,7 +94,7 @@ public class Users {
         this.updatedAt = Instant.now();
     }
 
-    public boolean isAccountCurrentLocked() {
+    public boolean isAccountCurrentlyLocked() {
         return !this.accountNotLocked &&
                 AccountLockedUntil != null &&
                 AccountLockedUntil.isBefore(Instant.now());

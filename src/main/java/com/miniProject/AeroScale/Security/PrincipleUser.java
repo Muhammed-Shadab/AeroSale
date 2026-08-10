@@ -13,7 +13,6 @@ import java.util.UUID;
 
 @Getter
 public class PrincipleUser implements UserDetails {
-
     private final UUID id;
     private final String email;
     private final String password;
@@ -26,7 +25,7 @@ public class PrincipleUser implements UserDetails {
         this.email = users.getEmail();
         this.password = users.getPassword();
         this.enabled = users.isEnabled();
-        this.isAccountLocked = users.isAccountCurrentLocked();
+        this.isAccountLocked = users.isAccountCurrentlyLocked();
         this.authorities = List.of(new SimpleGrantedAuthority("ROLE_" + users.getRole().name()));
     }
 
