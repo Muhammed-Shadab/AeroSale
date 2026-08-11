@@ -37,13 +37,13 @@ public class Users {
 
 
     @NotBlank
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 200)
     @JsonIgnore
     private String password;
 
     @NotBlank
     @Column(nullable = false, unique = true, length = 20)
-    private String PhoneNo;
+    private String phoneNo;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

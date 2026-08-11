@@ -8,11 +8,16 @@ import com.miniProject.AeroScale.Entity.Seller;
 import com.miniProject.AeroScale.Entity.Users;
 import com.miniProject.AeroScale.Exception.UserAlreadyExistsException;
 import com.miniProject.AeroScale.Repository.BuyerRepository;
+import com.miniProject.AeroScale.Repository.RefreshTokenRespository;
 import com.miniProject.AeroScale.Repository.SellerRepository;
 import com.miniProject.AeroScale.Repository.UserRepository;
 import com.miniProject.AeroScale.Security.JwtUtils;
+import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
@@ -20,13 +25,17 @@ import java.util.*;
 @RequiredArgsConstructor
 public class AuthServiceImp implements AuthService{
 
-    private UserRepository userRepository;
-    private BuyerRepository buyerRepository;
-    private SellerRepository sellerRepository;
-    private JwtUtils jwtUtils;
-    private RefreshTokenService refreshTokenService;
+    private final UserRepository userRepository;
+    private final BuyerRepository buyerRepository;
+    private final SellerRepository sellerRepository;
+    private final JwtUtils jwtUtils;
+    private final RefreshTokenService refreshTokenService;
+    private final PasswordEncoder passwordEncoder;
 
-    public RegisterResponse register(@Valid RegisterRequest registerRequest) {
+
+
+
+    public RegisterResponse register(RegisterRequest registerRequest) {
         if(registerRequest.getRole().equals(Role.ADMIN)) {
             throw new IllegalArgumentException("Admin accounts cannot be self-registered");
         }
@@ -40,9 +49,9 @@ public class AuthServiceImp implements AuthService{
 
         Users user = Users.builder()
                 .email(registerRequest.getEmail())
-                .password(registerRequest.getPassword())
-                .PhoneNo(registerRequest.getPhoneNo())
-                .role(Role.BUYER)
+                .password(passwordEncoder.encode(registerRequest.getPassword()))
+                .phoneNo(registerRequest.getPhoneNo())
+                .role(registerRequest.getRole())
                 .build();
 
         userRepository.save(user);
@@ -74,6 +83,7 @@ public class AuthServiceImp implements AuthService{
     public RegisterResponse generateTokenPair(Users user, String deviceInfo,String userIp) {
         String accessToken = jwtUtils.generateAccessToken(user.getId(), user.getEmail(), user.getRole().toString());
         String refreshToken = refreshTokenService.generateRefreshToken(user,deviceInfo,userIp);
+
 
        return RegisterResponse.builder()
                 .UUID(user.getId())

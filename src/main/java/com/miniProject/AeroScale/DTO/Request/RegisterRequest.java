@@ -4,14 +4,14 @@ package com.miniProject.AeroScale.DTO.Request;
 import com.miniProject.AeroScale.Entity.Role;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
+import lombok.*;
 
 import java.time.Instant;
 
 @Builder
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class RegisterRequest {
 
     @NotBlank(message = "Email should not be blank!!")

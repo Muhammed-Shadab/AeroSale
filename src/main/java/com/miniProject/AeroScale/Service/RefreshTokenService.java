@@ -3,8 +3,11 @@ package com.miniProject.AeroScale.Service;
 import com.miniProject.AeroScale.Entity.RefreshToken;
 import com.miniProject.AeroScale.Entity.Users;
 import com.miniProject.AeroScale.Repository.RefreshTokenRespository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.MessageDigest;
@@ -20,14 +23,13 @@ import java.util.Base64;
 public class RefreshTokenService {
 
     @Value("${jwt.refresh-token-byteLength}")
-    public static int TOKEN_BYTE_LENGTH;
+    public int TOKEN_BYTE_LENGTH;
 
     @Value("${jwt.refresh-token-expiration-ms}")
     private Long expiresDurationInMilli;
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private final RefreshTokenRespository refreshTokenRespository;
-
 
 
     public String generateRefreshToken(Users user, String deviceInfo, String userIp) {
@@ -37,7 +39,7 @@ public class RefreshTokenService {
         RefreshToken refreshToken = RefreshToken.builder()
                 .users(user)
                 .token(hash)
-                .expiresAt(Instant.now().plus(Duration.ofNanos(TOKEN_BYTE_LENGTH)))
+                .expiresAt(Instant.now().plus(Duration.ofNanos(expiresDurationInMilli)))
                 .deviceInfo(deviceInfo)
                 .issuedIp(userIp)
                 .build();

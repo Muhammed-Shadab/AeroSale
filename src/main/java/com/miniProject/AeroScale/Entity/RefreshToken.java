@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.hibernate.annotations.UuidGenerator;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.filter.DelegatingFilterProxy;
 
 import java.time.Instant;
 import java.util.*;
@@ -19,7 +21,6 @@ import java.util.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RefreshToken {
-
     @Id
     @UuidGenerator
     @Column(updatable = false)
