@@ -1,5 +1,6 @@
 package com.miniProject.AeroScale.Service;
 
+import com.miniProject.AeroScale.DTO.Request.LoginRequest;
 import com.miniProject.AeroScale.DTO.Request.RegisterRequest;
 import com.miniProject.AeroScale.DTO.Response.RegisterResponse;
 import com.miniProject.AeroScale.Entity.Buyer;
@@ -16,9 +17,18 @@ import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Service;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.util.*;
 
 @Service
@@ -31,8 +41,7 @@ public class AuthServiceImp implements AuthService{
     private final JwtUtils jwtUtils;
     private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
-
-
+    private final AuthenticationManager authenticationManager;
 
 
     public RegisterResponse register(RegisterRequest registerRequest) {
@@ -78,6 +87,17 @@ public class AuthServiceImp implements AuthService{
         }
         return generateTokenPair(user, "registration", null);
 
+    }
+
+    @Override
+    public RegisterResponse login(LoginRequest loginRequest) {
+        var usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken
+                (loginRequest.getEmail(), loginRequest.getPassword());
+
+        Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+
+        Users user = userRepository.findByEmailIgnoreCase(loginRequest.getEmail()).get();
+        return generateTokenPair(user, "registration", null);
     }
 
     public RegisterResponse generateTokenPair(Users user, String deviceInfo,String userIp) {
