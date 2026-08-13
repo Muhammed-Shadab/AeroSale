@@ -7,6 +7,8 @@ import com.miniProject.AeroScale.Entity.Buyer;
 import com.miniProject.AeroScale.Entity.Role;
 import com.miniProject.AeroScale.Entity.Seller;
 import com.miniProject.AeroScale.Entity.Users;
+import com.miniProject.AeroScale.Exception.AccountLockedException;
+import com.miniProject.AeroScale.Exception.InvalidCredentialException;
 import com.miniProject.AeroScale.Exception.UserAlreadyExistsException;
 import com.miniProject.AeroScale.Repository.BuyerRepository;
 import com.miniProject.AeroScale.Repository.RefreshTokenRespository;
@@ -18,22 +20,22 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImp implements AuthService{
+
+    private static  final int MAX_FAILED_LOGIN_ATTEMPT_COUNT = 5;
+    private static final int ACCCOUNT_LOCK_DURATION = 15;
 
     private final UserRepository userRepository;
     private final BuyerRepository buyerRepository;
@@ -91,13 +93,44 @@ public class AuthServiceImp implements AuthService{
 
     @Override
     public RegisterResponse login(LoginRequest loginRequest) {
-        var usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken
-                (loginRequest.getEmail(), loginRequest.getPassword());
 
-        Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+        Users user = userRepository.findByEmailIgnoreCase(loginRequest.getEmail()).orElseThrow(() ->
+                new InvalidCredentialException("Email doesn't exists"));
 
-        Users user = userRepository.findByEmailIgnoreCase(loginRequest.getEmail()).get();
+        if(!user.isAccountNotLocked()) {
+            throw new AccountLockedException("Account is temporarily locked due to repeated failed login attempts. Try again after some times.");
+        }
+
+        if(!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            registerFailedAttempt(user);
+            throw new InvalidCredentialException("Enter Valid password");
+        }
+
+        if(!user.isEnabled()) {
+            throw new InvalidCredentialException("Account is disables");
+        }
+
+        registerSuccesfullLogin(user);
+
         return generateTokenPair(user, "registration", null);
+    }
+
+
+    private void registerFailedAttempt(Users user) {
+        user.setFailedLoginAttempt(user.getFailedLoginAttempt() + 1);
+
+        if(user.getFailedLoginAttempt() >= MAX_FAILED_LOGIN_ATTEMPT_COUNT) {
+            user.setAccountNotLocked(false);
+            user.setAccountLockedUntil(Instant.now().plus(ACCCOUNT_LOCK_DURATION, ChronoUnit.MINUTES));
+        }
+
+        userRepository.save(user);
+    }
+
+    private void registerSuccesfullLogin(Users user) {
+        user.setAccountNotLocked(true);
+        user.setFailedLoginAttempt(0);
+        userRepository.save(user);
     }
 
     public RegisterResponse generateTokenPair(Users user, String deviceInfo,String userIp) {
