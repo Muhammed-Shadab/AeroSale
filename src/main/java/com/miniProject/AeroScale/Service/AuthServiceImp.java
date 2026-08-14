@@ -1,12 +1,10 @@
 package com.miniProject.AeroScale.Service;
 
 import com.miniProject.AeroScale.DTO.Request.LoginRequest;
+import com.miniProject.AeroScale.DTO.Request.RefreshTokenRequest;
 import com.miniProject.AeroScale.DTO.Request.RegisterRequest;
 import com.miniProject.AeroScale.DTO.Response.RegisterResponse;
-import com.miniProject.AeroScale.Entity.Buyer;
-import com.miniProject.AeroScale.Entity.Role;
-import com.miniProject.AeroScale.Entity.Seller;
-import com.miniProject.AeroScale.Entity.Users;
+import com.miniProject.AeroScale.Entity.*;
 import com.miniProject.AeroScale.Exception.AccountLockedException;
 import com.miniProject.AeroScale.Exception.InvalidCredentialException;
 import com.miniProject.AeroScale.Exception.UserAlreadyExistsException;
@@ -43,7 +41,6 @@ public class AuthServiceImp implements AuthService{
     private final JwtUtils jwtUtils;
     private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
 
 
     public RegisterResponse register(RegisterRequest registerRequest) {
@@ -113,6 +110,17 @@ public class AuthServiceImp implements AuthService{
         registerSuccesfullLogin(user);
 
         return generateTokenPair(user, "registration", null);
+    }
+
+    @Override
+    public RegisterResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
+        Users user = refreshTokenService.validateRefreshToken(refreshTokenRequest.getToken());
+        return generateTokenPair(user, null,null);
+    }
+
+    @Override
+    public void logout(RefreshTokenRequest refreshTokenRequest) {
+        refreshTokenService.revoke(refreshTokenRequest.getToken());
     }
 
 

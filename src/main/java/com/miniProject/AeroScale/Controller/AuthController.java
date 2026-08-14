@@ -2,6 +2,7 @@ package com.miniProject.AeroScale.Controller;
 
 
 import com.miniProject.AeroScale.DTO.Request.LoginRequest;
+import com.miniProject.AeroScale.DTO.Request.RefreshTokenRequest;
 import com.miniProject.AeroScale.DTO.Request.RegisterRequest;
 import com.miniProject.AeroScale.DTO.Response.RegisterResponse;
 import com.miniProject.AeroScale.Service.AuthService;
@@ -33,6 +34,18 @@ public class AuthController {
     public ResponseEntity<RegisterResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
         RegisterResponse registerResponse = authService.login(loginRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(registerResponse);
+    }
+
+    @PostMapping("/refreshToken")
+    public ResponseEntity<RegisterResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
+        RegisterResponse registerResponse = authService.refreshToken(refreshTokenRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(registerResponse);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
+        authService.logout(refreshTokenRequest);
+        return ResponseEntity.noContent().build();
     }
 
 }

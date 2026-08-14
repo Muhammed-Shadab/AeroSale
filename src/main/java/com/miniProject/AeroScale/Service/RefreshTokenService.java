@@ -2,12 +2,11 @@ package com.miniProject.AeroScale.Service;
 
 import com.miniProject.AeroScale.Entity.RefreshToken;
 import com.miniProject.AeroScale.Entity.Users;
+import com.miniProject.AeroScale.Exception.RefreshTokenException;
 import com.miniProject.AeroScale.Repository.RefreshTokenRespository;
-import jakarta.annotation.PostConstruct;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.MessageDigest;
@@ -69,4 +68,25 @@ public class RefreshTokenService {
         }
     }
 
+    public Users validateRefreshToken(String token) {
+        String hash = sha256Hex(token);
+        RefreshToken refreshToken = refreshTokenRespository.findByToken(hash)
+                .orElseThrow(() -> new RefreshTokenException("Refresh token not found!"));
+
+        if(refreshToken.isExpired()) {
+            throw new RefreshTokenException("Unable to create the Access token because Refresh token is Expired");
+        }
+
+        if(!refreshToken.isUsable()) {
+            throw new RefreshTokenException("Refresh Token is Already Revoked!!");
+        }
+
+        refreshTokenRespository.revokeById(refreshToken.getId());
+        return refreshToken.getUsers();
+    }
+
+    public void revoke(String token) {
+        String hash = sha256Hex(token);
+        refreshTokenRespository.revokeIfExistByToken(hash);
+    }
 }
