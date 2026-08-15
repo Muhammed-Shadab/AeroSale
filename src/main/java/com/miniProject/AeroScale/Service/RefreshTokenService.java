@@ -74,7 +74,7 @@ public class RefreshTokenService {
                 .orElseThrow(() -> new RefreshTokenException("Refresh token not found!"));
 
         if(refreshToken.isExpired()) {
-            throw new RefreshTokenException("Unable to create the Access token because Refresh token is Expired");
+            throw new RefreshTokenException("Unable to create the Access token because Refesh token is Expired");
         }
 
         if(!refreshToken.isUsable()) {

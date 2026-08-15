@@ -47,5 +47,11 @@ public class AuthController {
         authService.logout(refreshTokenRequest);
         return ResponseEntity.noContent().build();
     }
+//   "accessToken": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyMTg3NmQ1Zi01YmZkLTQ4NzAtOTVmYy0zY2I4ZmY2OGM1ZTgiLCJlbWFpbCI6InM9cXFyYTRoeWhyb0BnbWFpbC5jb20iLCJyb2xlIjoiU0VMTEVSIiwiaXNzIjoiQWVyb1NjYWxlLWF1dGgtc2VydmljZSIsImlhdCI6MTc4Njc5ODY2NiwiZXhwIjoxNzg2Nzk5NTY2fQ.t8WAsFXf6XsVdEi-ZsxzFazZne7O2U3T8jYxnmXAtFY",
+//           "refreshToken": "238soFu9uuKJPMjPrEqHEGRhz1UD-vgrBmQMVKEOKR5fMYeEEeH4bbPRlMH3FWB3l80-x5GV7F6wLehbOAJG7w",
+    @GetMapping("/testing")
+    public String test() {
+        return "Working";
+    }
 
 }

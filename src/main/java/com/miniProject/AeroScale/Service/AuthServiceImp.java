@@ -92,7 +92,7 @@ public class AuthServiceImp implements AuthService{
     public RegisterResponse login(LoginRequest loginRequest) {
 
         Users user = userRepository.findByEmailIgnoreCase(loginRequest.getEmail()).orElseThrow(() ->
-                new InvalidCredentialException("Email doesn't exists"));
+                new InvalidCredentialException("Email does not exists"));
 
         if(!user.isAccountNotLocked()) {
             throw new AccountLockedException("Account is temporarily locked due to repeated failed login attempts. Try again after some times.");
