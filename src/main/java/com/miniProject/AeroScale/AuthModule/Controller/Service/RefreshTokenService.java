@@ -4,6 +4,7 @@ import com.miniProject.AeroScale.AuthModule.Controller.Entity.RefreshToken;
 import com.miniProject.AeroScale.AuthModule.Controller.Entity.Users;
 import com.miniProject.AeroScale.AuthModule.Controller.Exception.RefreshTokenException;
 import com.miniProject.AeroScale.AuthModule.Controller.Repository.RefreshTokenRespository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class RefreshTokenService {
     private final RefreshTokenRespository refreshTokenRespository;
 
 
+    @Transactional
     public String generateRefreshToken(Users user, String deviceInfo, String userIp) {
         String rawToken = generateRawToken();
         String hash = sha256Hex(rawToken);
@@ -67,11 +69,14 @@ public class RefreshTokenService {
         }
     }
 
+
+    @Transactional
     public Users validateRefreshToken(String token) {
         String hash = sha256Hex(token);
-        System.out.println(hash);
+
         RefreshToken refreshToken = refreshTokenRespository.findByToken(hash)
                 .orElseThrow(() -> new RefreshTokenException("Refresh token not found!"));
+
 
         if(refreshToken.isExpired()) {
             throw new RefreshTokenException("Unable to create the Access token because Refesh token is Expired");
@@ -80,7 +85,6 @@ public class RefreshTokenService {
         if(!refreshToken.isUsable()) {
             throw new RefreshTokenException("Refresh Token is Already Revoked!!");
         }
-
         refreshTokenRespository.revokeById(refreshToken.getId());
         return refreshToken.getUsers();
     }
