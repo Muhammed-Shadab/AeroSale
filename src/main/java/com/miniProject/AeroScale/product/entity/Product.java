@@ -1,7 +1,6 @@
 package com.miniProject.AeroScale.product.entity;
 
 
-import com.miniProject.AeroScale.SellerModule.Entity.Seller;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,9 +23,8 @@ public class Product {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seller_id", nullable = false)
-    private Seller seller;
+    @Column(name = "seller_id", nullable = false)
+    private UUID sellerId;
 
     @Column(nullable = false, length = 100)
     private String name;
