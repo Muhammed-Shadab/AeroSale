@@ -1,6 +1,6 @@
-package com.miniProject.AeroScale.AuthModule.Repository;
+package com.miniProject.AeroScale.BuyerModule.Repository;
 
-import com.miniProject.AeroScale.AuthModule.Entity.Buyer;
+import com.miniProject.AeroScale.BuyerModule.Entity.Buyer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

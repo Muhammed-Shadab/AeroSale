@@ -4,15 +4,15 @@ import com.miniProject.AeroScale.AuthModule.DTO.Request.LoginRequest;
 import com.miniProject.AeroScale.AuthModule.DTO.Request.RefreshTokenRequest;
 import com.miniProject.AeroScale.AuthModule.DTO.Request.RegisterRequest;
 import com.miniProject.AeroScale.AuthModule.DTO.Response.RegisterResponse;
-import com.miniProject.AeroScale.AuthModule.Entity.Buyer;
+import com.miniProject.AeroScale.BuyerModule.Entity.Buyer;
 import com.miniProject.AeroScale.AuthModule.Entity.Role;
-import com.miniProject.AeroScale.AuthModule.Entity.Seller;
+import com.miniProject.AeroScale.SellerModule.Entity.Seller;
 import com.miniProject.AeroScale.AuthModule.Entity.Users;
 import com.miniProject.AeroScale.AuthModule.Exception.AccountLockedException;
 import com.miniProject.AeroScale.AuthModule.Exception.InvalidCredentialException;
 import com.miniProject.AeroScale.AuthModule.Exception.UserAlreadyExistsException;
-import com.miniProject.AeroScale.AuthModule.Repository.BuyerRepository;
-import com.miniProject.AeroScale.AuthModule.Repository.SellerRepository;
+import com.miniProject.AeroScale.BuyerModule.Repository.BuyerRepository;
+import com.miniProject.AeroScale.SellerModule.Repository.SellerRepository;
 import com.miniProject.AeroScale.AuthModule.Repository.UserRepository;
 import com.miniProject.AeroScale.AuthModule.Security.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -31,11 +31,12 @@ public class AuthServiceImp implements AuthService{
     private static final int ACCCOUNT_LOCK_DURATION = 15;
 
     private final UserRepository userRepository;
-    private final BuyerRepository buyerRepository;
     private final SellerRepository sellerRepository;
     private final JwtUtils jwtUtils;
     private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
+
+    private final BuyerRepository buyerRepository;
 
 
     public RegisterResponse register(RegisterRequest registerRequest) {
@@ -60,16 +61,21 @@ public class AuthServiceImp implements AuthService{
         userRepository.save(user);
 
         if(registerRequest.getRole().equals(Role.BUYER)) {
+
+            //In case of MicroService this will be done by Event Driven Approach
             Buyer buyer = Buyer.builder()
-                    .users(user)
-                    .fullName(registerRequest.getFullName())
+                    .id(user.getId())
                     .DateOfBirth(registerRequest.getDOB())
+                    .fullName(registerRequest.getFullName())
                     .build();
 
             buyerRepository.save(buyer);
+
         }else {
+
+            //In case of MicroService this will be done by Event Driven Approach
             Seller seller = Seller.builder()
-                    .users(user)
+                    .id(user.getId())
                     .bussinessName(registerRequest.getFullName())
                     .bussinessAdress(registerRequest.getBussinessAdress())
                     .wareHousePinCode(registerRequest.getWareHousePinCode())

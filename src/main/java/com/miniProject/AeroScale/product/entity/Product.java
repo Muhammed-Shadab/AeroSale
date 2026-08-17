@@ -1,6 +1,7 @@
 package com.miniProject.AeroScale.product.entity;
 
-import com.miniProject.AeroScale.Entity.Seller;
+
+import com.miniProject.AeroScale.SellerModule.Entity.Seller;
 import jakarta.persistence.*;
 import lombok.*;
 

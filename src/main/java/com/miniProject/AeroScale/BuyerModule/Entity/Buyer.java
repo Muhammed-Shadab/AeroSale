@@ -1,5 +1,6 @@
-package com.miniProject.AeroScale.AuthModule.Entity;
+package com.miniProject.AeroScale.BuyerModule.Entity;
 
+import com.miniProject.AeroScale.AuthModule.Entity.Users;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -21,12 +22,6 @@ public class Buyer {
     @Id
     @Column(nullable = false, updatable = false)
     private UUID id;
-
-    @MapsId
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
-    private Users users;
-
 
     @NotBlank
     @Column(nullable = false, length = 150)

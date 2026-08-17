@@ -1,6 +1,8 @@
 package com.miniProject.AeroScale.AuthModule.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.miniProject.AeroScale.BuyerModule.Entity.Buyer;
+import com.miniProject.AeroScale.SellerModule.Entity.Seller;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -74,13 +76,6 @@ public class Users {
     private Instant AccountLockedUntil;
 
     private String lastLoginIp;
-
-
-    @OneToOne(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Seller seller;
-
-    @OneToOne(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Buyer buyer;
 
     @PrePersist
     protected void init() {
