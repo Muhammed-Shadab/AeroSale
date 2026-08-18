@@ -40,10 +40,6 @@ public class CartItem {
     @Column(nullable = false)
     private int itemCount;
 
-    @NotNull
-    @Min(1)
-    @Column(nullable = false)
-    private BigDecimal pricePerItem;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt;

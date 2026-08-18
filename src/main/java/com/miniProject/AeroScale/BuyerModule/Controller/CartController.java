@@ -5,6 +5,7 @@ import com.miniProject.AeroScale.BuyerModule.DTO.Request.ItemDataForCart;
 import com.miniProject.AeroScale.BuyerModule.Service.CartService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,5 +26,6 @@ public class CartController {
     public ResponseEntity<?> addItemToCart(@Valid @RequestBody ItemDataForCart itemDataForCart,
                                            @AuthenticationPrincipal AuthenticatedObject authenticatedObject) {
         cartService.addItemToCart(itemDataForCart, authenticatedObject);
+        return ResponseEntity.status(HttpStatus.CREATED.value()).build();
     }
 }

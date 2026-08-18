@@ -1,9 +1,8 @@
 package com.miniProject.AeroScale.BuyerModule.Service.Imp;
 
 import com.miniProject.AeroScale.BuyerModule.DTO.Request.BuyerProfileUpdateRequest;
-import com.miniProject.AeroScale.BuyerModule.DTO.Request.ItemDataForCart;
 import com.miniProject.AeroScale.BuyerModule.Entity.Buyer;
-import com.miniProject.AeroScale.BuyerModule.Exception.BuyerNotFoundException;
+import com.miniProject.AeroScale.BuyerModule.Exception.RequiredThingsNotFoundException;
 import com.miniProject.AeroScale.BuyerModule.Repository.BuyerRepository;
 import com.miniProject.AeroScale.BuyerModule.Service.BuyerService;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +31,6 @@ public class BuyerServiceImp implements BuyerService {
 
     private Buyer findBuyerOrThrow(UUID id) {
         return buyerRepository.findById(id)
-                .orElseThrow(() -> new BuyerNotFoundException("User Not Found"));
+                .orElseThrow(() -> new RequiredThingsNotFoundException("User Not Found"));
     }
 }
