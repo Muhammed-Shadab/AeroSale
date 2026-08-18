@@ -4,6 +4,7 @@ package com.miniProject.AeroScale.product.service;
 import com.miniProject.AeroScale.product.dto.ProductRequest;
 import com.miniProject.AeroScale.product.dto.ProductResponse;
 import com.miniProject.AeroScale.product.entity.Product;
+import com.miniProject.AeroScale.product.exception.ProductNotFoundException;
 import com.miniProject.AeroScale.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -71,6 +72,6 @@ public class ProductServiceImpl implements ProductService {
     // Helper method to enforce data isolation (DRY Principle)
     private Product fetchProduct(UUID productId, UUID sellerId) {
         return productRepository.findByIdAndSellerId(productId, sellerId)
-                .orElseThrow(() -> new RuntimeException("Product not found or you do not have permission to access it"));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found or you do not have permission to access it"));
     }
 }
