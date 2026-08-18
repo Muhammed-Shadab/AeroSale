@@ -1,20 +1,13 @@
 package com.miniProject.AeroScale.BuyerModule.Service;
 
-
 import com.miniProject.AeroScale.AuthModule.Security.JwtAuthenticationFilter;
-import com.miniProject.AeroScale.BuyerModule.DTO.Request.BuyerProfileUpdateRequest;
 import com.miniProject.AeroScale.BuyerModule.DTO.Request.ItemDataForCart;
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.miniProject.AeroScale.AuthModule.Security.JwtAuthenticationFilter.AuthenticatedObject;
 
-import java.security.Principal;
-
 @Service
-public interface BuyerService {
+public interface CartService {
 
-
-    void updateProfile(BuyerProfileUpdateRequest buyerProfileUpdateRequest, AuthenticatedObject authenticatedObject);
-
+    void addItemToCart(ItemDataForCart itemDataForCart, AuthenticatedObject authenticatedObject);
 }

@@ -27,12 +27,6 @@ public class Buyer {
     @Column(nullable = false, length = 150)
     private String fullName;
 
-    @Column(length = 500)
-    private String defaultShippingAddress;
-
-    @Column(length = 20)
-    private String defaultShippingPinCode;
-
     @Builder.Default
     @Column(precision = 12, scale = 2)
     private BigDecimal walletBalance = BigDecimal.ZERO;

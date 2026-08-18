@@ -31,6 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if(token != null && token.length() > 0) {
             JwtTokenValidating jwtTokenValidating = jwtUtils.validateToken(token);
+
             if(jwtTokenValidating.equals(JwtTokenValidating.EXPIRED)) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
@@ -44,6 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String email = jwtUtils.extractEmail(token);
                 UUID id = jwtUtils.extractUserId(token);
                 String role = jwtUtils.extractRole(token);
+
 
                 var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
                 var usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(

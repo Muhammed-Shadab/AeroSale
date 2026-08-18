@@ -41,9 +41,6 @@ public class RegisterRequest {
     @NotNull(message = "Enter the date of Birth")
     private Instant DOB;
 
-    //buyer specific
-    private String defaultShippingAddress;
-    private String defaultShippingPincode;
 
     //seller specific
     private String bussinessAdress;
