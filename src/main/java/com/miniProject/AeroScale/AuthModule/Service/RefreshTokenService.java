@@ -85,6 +85,7 @@ public class RefreshTokenService {
         if(!refreshToken.isUsable()) {
             throw new RefreshTokenException("Refresh Token is Already Revoked!!");
         }
+
         refreshTokenRespository.revokeById(refreshToken.getId());
         return refreshToken.getUsers();
     }

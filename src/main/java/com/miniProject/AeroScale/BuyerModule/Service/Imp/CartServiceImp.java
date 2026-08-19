@@ -40,7 +40,7 @@ public class CartServiceImp implements CartService {
         Product product = productRepository.findById(itemDataForCart.getProductId())
                 .orElseThrow(() -> new RequiredThingsNotFoundException("Item not Found"));
 
-        CartItem existing = cartRespository.findByBuyerAndProductId(buyer.getId(), product.getId()).orElse(null);
+        CartItem existing = cartRespository.findByBuyerAndProduct(buyer, product).orElse(null);
 
         assertStockAvailable(product, itemDataForCart.getCount());
         if(existing == null) {
@@ -60,7 +60,10 @@ public class CartServiceImp implements CartService {
     @Override
     @Transactional
     public void removeItem(UUID itemId, UUID buyerId) {
-        CartItem item = cartRespository.findByIdAndBuyerId(itemId, buyerId)
+        Buyer buyer = buyerRepository.findById(buyerId).
+                orElseThrow(() -> new RequiredThingsNotFoundException("Buyer NotFound!!"));
+
+        CartItem item = cartRespository.findByIdAndBuyerId(itemId, buyer.getId())
                 .orElseThrow(() -> new CartItemNotFoundException("Cart Item not Found " + itemId));
         cartRespository.delete(item);
     }
@@ -80,7 +83,10 @@ public class CartServiceImp implements CartService {
     @Override
     @Transactional
     public void UpdateCartDetails(UpdateCartItemRequest updateCartItemRequest, UUID buyerId) {
-        CartItem item = cartRespository.findByIdAndBuyerId(updateCartItemRequest.getCartid(), buyerId)
+        Buyer buyer = buyerRepository.findById(buyerId).
+                orElseThrow(() -> new RequiredThingsNotFoundException("Buyer NotFound!!"));
+
+        CartItem item = cartRespository.findByIdAndBuyerId(updateCartItemRequest.getCartid(), buyer.getId())
                 .orElseThrow(() -> new CartItemNotFoundException("cart Item NotFound!!"));
 
         Product product = item.getProduct();

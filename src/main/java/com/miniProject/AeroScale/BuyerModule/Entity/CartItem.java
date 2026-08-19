@@ -36,9 +36,9 @@ public class CartItem {
     private Product product;
 
     @Min(1)
-    @NotBlank
+    @NotNull
     @Column(nullable = false)
-    private int itemCount;
+    private Integer itemCount;
 
 
     @Column(nullable = false, updatable = false)

@@ -20,5 +20,5 @@ public class ItemDataForCart {
 
     @NotNull(message = "Atleast one quantity of the respective item")
     @Min(value = 1, message = "Atleast one quantity of the respective item")
-    private int count;
+    private Integer count;
 }
