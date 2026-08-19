@@ -1,8 +1,10 @@
-package com.miniProject.AeroScale.product.dto;
+package com.miniProject.AeroScale.product.dto.request;
 
+import com.miniProject.AeroScale.product.entity.Product.ProductStatus;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
+
 
 public record ProductRequest(
 
@@ -19,6 +21,9 @@ public record ProductRequest(
 
         @NotNull(message = "Stock quantity is required")
         @Min(value = 0, message = "Stock quantity cannot be negative")
-        Integer stockQuantity
+        Integer stockQuantity,
+
+        @NotNull(message = "Product status is required")
+        ProductStatus status
 ) {}
 

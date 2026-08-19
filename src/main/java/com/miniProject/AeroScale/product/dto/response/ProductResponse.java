@@ -1,4 +1,4 @@
-package com.miniProject.AeroScale.product.dto;
+package com.miniProject.AeroScale.product.dto.response;
 
 import com.miniProject.AeroScale.product.entity.Product;
 
@@ -13,6 +13,7 @@ public record ProductResponse(
         String description,
         BigDecimal price,
         Integer stockQuantity,
+        Product.ProductStatus status,
         Long version,
         Instant createdAt,
         Instant updatedAt
@@ -25,6 +26,7 @@ public record ProductResponse(
                 product.getDescription(),
                 product.getPrice(),
                 product.getStockQuantity(),
+                product.getStatus(),
                 product.getVersion(),
                 product.getCreatedAt(),
                 product.getUpdatedAt()

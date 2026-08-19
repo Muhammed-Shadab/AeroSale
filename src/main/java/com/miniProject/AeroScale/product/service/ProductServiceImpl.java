@@ -1,8 +1,8 @@
 package com.miniProject.AeroScale.product.service;
 
 
-import com.miniProject.AeroScale.product.dto.ProductRequest;
-import com.miniProject.AeroScale.product.dto.ProductResponse;
+import com.miniProject.AeroScale.product.dto.request.ProductRequest;
+import com.miniProject.AeroScale.product.dto.response.ProductResponse;
 import com.miniProject.AeroScale.product.entity.Product;
 import com.miniProject.AeroScale.product.exception.ProductNotFoundException;
 import com.miniProject.AeroScale.product.repository.ProductRepository;
@@ -29,6 +29,7 @@ public class ProductServiceImpl implements ProductService {
                 .description((request.description()))
                 .price(request.price())
                 .stockQuantity(request.stockQuantity())
+                .status(request.status())
                 .build();
         Product savedProduct = productRepository.save(product);
         return ProductResponse.fromEntity(savedProduct);
@@ -57,6 +58,7 @@ public class ProductServiceImpl implements ProductService {
         product.setDescription(request.description());
         product.setPrice(request.price());
         product.setStockQuantity(request.stockQuantity());
+        product.setStatus(request.status());
 
         Product updatedProduct = productRepository.save(product);
         return ProductResponse.fromEntity(updatedProduct);

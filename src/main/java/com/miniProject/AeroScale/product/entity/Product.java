@@ -47,6 +47,16 @@ public class Product {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ProductStatus status = ProductStatus.DRAFT; // Default is DRAFT
+
+    public enum ProductStatus {
+        DRAFT,
+        ACTIVE,
+        ARCHIVED
+    }
+
     @PrePersist
     protected void init() {
         Instant now = Instant.now();

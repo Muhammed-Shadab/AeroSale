@@ -1,7 +1,7 @@
 package com.miniProject.AeroScale.product.controller;
 
-import com.miniProject.AeroScale.product.dto.ProductRequest;
-import com.miniProject.AeroScale.product.dto.ProductResponse;
+import com.miniProject.AeroScale.product.dto.request.ProductRequest;
+import com.miniProject.AeroScale.product.dto.response.ProductResponse;
 import com.miniProject.AeroScale.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

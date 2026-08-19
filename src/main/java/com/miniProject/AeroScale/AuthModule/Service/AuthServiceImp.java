@@ -73,7 +73,7 @@ public class AuthServiceImp implements AuthService{
             buyerRepository.save(buyer);
 
         }else {
-
+            //System.out.println("hello from seller side");
             //In case of MicroService this will be done by Event Driven Approach
             Seller seller = Seller.builder()
                     .id(user.getId())
@@ -85,7 +85,9 @@ public class AuthServiceImp implements AuthService{
                     .build();
 
             sellerRepository.save(seller);
+            //System.out.println("over");
         }
+        //System.out.println("fin");
         return generateTokenPair(user, "registration", null);
 
     }
