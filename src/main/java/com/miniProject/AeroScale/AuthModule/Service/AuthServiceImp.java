@@ -60,6 +60,7 @@ public class AuthServiceImp implements AuthService{
 
         userRepository.save(user);
 
+
         if(registerRequest.getRole().equals(Role.BUYER)) {
 
             //In case of MicroService this will be done by Event Driven Approach
