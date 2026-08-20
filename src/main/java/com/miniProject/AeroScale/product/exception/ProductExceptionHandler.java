@@ -58,8 +58,5 @@ public class ProductExceptionHandler {
         problemDetail.setTitle("Conflict - Concurrent Update");
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
-
-
-
     }
 }

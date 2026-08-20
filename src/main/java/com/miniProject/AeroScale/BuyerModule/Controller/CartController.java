@@ -2,17 +2,14 @@ package com.miniProject.AeroScale.BuyerModule.Controller;
 
 import com.miniProject.AeroScale.BuyerModule.DTO.Request.ItemDataForCart;
 import com.miniProject.AeroScale.BuyerModule.DTO.Response.CartResponse;
-import com.miniProject.AeroScale.BuyerModule.DTO.Response.UpdateCartItemRequest;
-import com.miniProject.AeroScale.BuyerModule.Exception.CartItemNotFoundException;
+import com.miniProject.AeroScale.BuyerModule.DTO.Request.UpdateCartItemRequest;
 import com.miniProject.AeroScale.BuyerModule.Service.CartService;
-import jakarta.persistence.PostUpdate;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import com.miniProject.AeroScale.AuthModule.Security.JwtAuthenticationFilter.AuthenticatedObject;
 
 import java.util.List;
 import java.util.UUID;

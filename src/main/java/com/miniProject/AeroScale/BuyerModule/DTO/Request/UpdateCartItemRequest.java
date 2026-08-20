@@ -1,4 +1,4 @@
-package com.miniProject.AeroScale.BuyerModule.DTO.Response;
+package com.miniProject.AeroScale.BuyerModule.DTO.Request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

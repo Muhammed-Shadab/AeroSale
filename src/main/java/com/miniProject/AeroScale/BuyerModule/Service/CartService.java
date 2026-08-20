@@ -1,12 +1,9 @@
 package com.miniProject.AeroScale.BuyerModule.Service;
 
-import com.miniProject.AeroScale.AuthModule.Security.JwtAuthenticationFilter;
 import com.miniProject.AeroScale.BuyerModule.DTO.Request.ItemDataForCart;
 import com.miniProject.AeroScale.BuyerModule.DTO.Response.CartResponse;
-import com.miniProject.AeroScale.BuyerModule.DTO.Response.UpdateCartItemRequest;
-import jakarta.validation.Valid;
+import com.miniProject.AeroScale.BuyerModule.DTO.Request.UpdateCartItemRequest;
 import org.springframework.stereotype.Service;
-import com.miniProject.AeroScale.AuthModule.Security.JwtAuthenticationFilter.AuthenticatedObject;
 
 import java.util.List;
 import java.util.UUID;

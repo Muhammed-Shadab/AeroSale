@@ -2,7 +2,7 @@ package com.miniProject.AeroScale.BuyerModule.Service.Imp;
 
 import com.miniProject.AeroScale.BuyerModule.DTO.Request.ItemDataForCart;
 import com.miniProject.AeroScale.BuyerModule.DTO.Response.CartResponse;
-import com.miniProject.AeroScale.BuyerModule.DTO.Response.UpdateCartItemRequest;
+import com.miniProject.AeroScale.BuyerModule.DTO.Request.UpdateCartItemRequest;
 import com.miniProject.AeroScale.BuyerModule.Entity.Buyer;
 import com.miniProject.AeroScale.BuyerModule.Entity.CartItem;
 import com.miniProject.AeroScale.BuyerModule.Exception.CartItemNotFoundException;
@@ -10,7 +10,6 @@ import com.miniProject.AeroScale.BuyerModule.Exception.InsufficientStockExceptio
 import com.miniProject.AeroScale.BuyerModule.Exception.RequiredThingsNotFoundException;
 import com.miniProject.AeroScale.BuyerModule.Repository.BuyerRepository;
 import com.miniProject.AeroScale.BuyerModule.Repository.CartRespository;
-import com.miniProject.AeroScale.BuyerModule.Service.BuyerService;
 import com.miniProject.AeroScale.BuyerModule.Service.CartService;
 import com.miniProject.AeroScale.product.entity.Product;
 import com.miniProject.AeroScale.product.repository.ProductRepository;
@@ -35,7 +34,7 @@ public class CartServiceImp implements CartService {
     @Transactional
     public void addItemToCart(ItemDataForCart itemDataForCart, UUID id) {
         Buyer buyer = buyerRepository.findById(id).
-                orElseThrow(() -> new RequiredThingsNotFoundException("Buyer NotFound!!"));
+                orElseThrow(() -> new RequiredThingsNotFoundException("Buyer Not Found!!"));
 
         Product product = productRepository.findById(itemDataForCart.getProductId())
                 .orElseThrow(() -> new RequiredThingsNotFoundException("Item not Found"));
@@ -61,10 +60,10 @@ public class CartServiceImp implements CartService {
     @Transactional
     public void removeItem(UUID itemId, UUID buyerId) {
         Buyer buyer = buyerRepository.findById(buyerId).
-                orElseThrow(() -> new RequiredThingsNotFoundException("Buyer NotFound!!"));
+                orElseThrow(() -> new RequiredThingsNotFoundException("Buyer Not Found!!"));
 
         CartItem item = cartRespository.findByIdAndBuyerId(itemId, buyer.getId())
-                .orElseThrow(() -> new CartItemNotFoundException("Cart Item not Found " + itemId));
+                .orElseThrow(() -> new CartItemNotFoundException("Product Not found in your cart!!"));
         cartRespository.delete(item);
     }
 
@@ -87,7 +86,7 @@ public class CartServiceImp implements CartService {
                 orElseThrow(() -> new RequiredThingsNotFoundException("Buyer NotFound!!"));
 
         CartItem item = cartRespository.findByIdAndBuyerId(updateCartItemRequest.getCartid(), buyer.getId())
-                .orElseThrow(() -> new CartItemNotFoundException("cart Item NotFound!!"));
+                .orElseThrow(() -> new CartItemNotFoundException("Product Not Found in your Cart!!"));
 
         Product product = item.getProduct();
         assertStockAvailable(product, updateCartItemRequest.getItemCount());

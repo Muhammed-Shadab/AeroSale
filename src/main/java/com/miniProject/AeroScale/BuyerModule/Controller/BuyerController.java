@@ -2,8 +2,10 @@ package com.miniProject.AeroScale.BuyerModule.Controller;
 
 
 import com.miniProject.AeroScale.AuthModule.Security.JwtAuthenticationFilter;
+import com.miniProject.AeroScale.BuyerModule.DTO.Request.AddAddressRequest;
 import com.miniProject.AeroScale.BuyerModule.DTO.Request.BuyerProfileUpdateRequest;
 import com.miniProject.AeroScale.BuyerModule.DTO.Request.ItemDataForCart;
+import com.miniProject.AeroScale.BuyerModule.DTO.Response.AddAddressResponse;
 import com.miniProject.AeroScale.BuyerModule.Entity.Buyer;
 import com.miniProject.AeroScale.BuyerModule.Service.BuyerService;
 import jakarta.validation.Valid;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import com.miniProject.AeroScale.AuthModule.Security.JwtAuthenticationFilter.AuthenticatedObject;
 
 import java.security.Principal;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/buyer")
@@ -28,10 +31,20 @@ public class BuyerController {
 
     @PostMapping("/updateProfile")
     public ResponseEntity<?> updateProfile(@Valid @RequestBody BuyerProfileUpdateRequest buyerProfileUpdateRequest,
-                                           @AuthenticationPrincipal AuthenticatedObject authenticatedObject) {
+                                           @AuthenticationPrincipal(expression = "id") AuthenticatedObject authenticatedObject) {
 
             buyerService.updateProfile(buyerProfileUpdateRequest, authenticatedObject);
             return ResponseEntity.status(HttpStatus.CREATED.value()).build();
     }
+
+    @PostMapping("/addAddress")
+    public ResponseEntity<AddAddressResponse> addAddress(@Valid @RequestBody AddAddressRequest addAddressRequest,
+                                                         @AuthenticationPrincipal(expression = "id") UUID id) {
+        buyerService.addAddress(addAddressRequest, id);
+        return ResponseEntity.status(HttpStatus.CREATED.value()).build();
+    }
+
+
+
 
 }
