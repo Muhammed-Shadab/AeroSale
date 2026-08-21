@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import com.miniProject.AeroScale.AuthModule.Security.JwtAuthenticationFilter.AuthenticatedObject;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -38,10 +40,12 @@ public class BuyerServiceImp implements BuyerService {
 
     @Override
     @Transactional
-    public AddAddressResponse addAddress(AddAddressRequest addAddressRequest, UUID id) {
+    public AddAddressResponse  addAddress(AddAddressRequest addAddressRequest, UUID id) {
         Buyer buyer = findBuyerOrThrow(id);
+        int count = buyerAddressRepository.countByBuyerId(id);
 
-        buyerAddressRepository.clearDefaultForBuyer(id);
+        if(count == 0) addAddressRequest.setDefault(true);
+        else if(addAddressRequest.isDefault()) buyerAddressRepository.clearDefaultForBuyer(id);
 
         BuyerAddress buyerAddress = BuyerAddress.builder()
                 .buyer(buyer)
@@ -73,6 +77,31 @@ public class BuyerServiceImp implements BuyerService {
         }
 
         return BuyerAddressToAddAddressResponseConverter(address);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AddAddressResponse> getAllAddress(UUID id) {
+        List<BuyerAddress> addressList = buyerAddressRepository.findAllByBuyerId(id);
+
+        List<AddAddressResponse> responseList = new ArrayList<>();
+        for(BuyerAddress address: addressList) {
+            responseList.add(BuyerAddressToAddAddressResponseConverter(address));
+        }
+        return responseList;
+    }
+
+    @Override
+    @Transactional
+    public void deleteAddress(UUID id, UUID addId) {
+        BuyerAddress address = findAddressByBuyerOrThrow(addId, id);
+        boolean isDefault = address.isDefault();
+        buyerAddressRepository.delete(address);
+    }
+
+    private BuyerAddress findAddressByBuyerOrThrow(UUID addId, UUID id) {
+        return buyerAddressRepository.findByIdAndBuyerId(addId, id)
+                .orElseThrow(() -> new RequiredThingsNotFoundException("Address Not Found!!"));
     }
 
     private AddAddressResponse BuyerAddressToAddAddressResponseConverter(BuyerAddress buyerAddress) {

@@ -7,6 +7,7 @@ import com.miniProject.AeroScale.BuyerModule.DTO.Request.BuyerProfileUpdateReque
 import com.miniProject.AeroScale.BuyerModule.DTO.Response.AddAddressResponse;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -20,4 +21,7 @@ public interface BuyerService {
 //    this is for cross-module communication (Order -> Buyer)
     AddAddressResponse getBuyerAddressForCheckout(UUID buyerId, UUID addressId);
 
+    List<AddAddressResponse> getAllAddress(UUID id);
+
+    void deleteAddress(UUID id, UUID addId);
 }

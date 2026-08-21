@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import com.miniProject.AeroScale.AuthModule.Security.JwtAuthenticationFilter.AuthenticatedObject;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -41,6 +42,18 @@ public class BuyerController {
     public ResponseEntity<AddAddressResponse> addAddress(@Valid @RequestBody AddAddressRequest addAddressRequest,
                                                          @AuthenticationPrincipal(expression = "id") UUID id) {
         buyerService.addAddress(addAddressRequest, id);
+        return ResponseEntity.status(HttpStatus.CREATED.value()).build();
+    }
+
+    @GetMapping("/getAllAddress")
+    public ResponseEntity<List<AddAddressResponse>> getAllAddress(@AuthenticationPrincipal(expression = "id") UUID id) {
+        return ResponseEntity.status(HttpStatus.CREATED.value()).body(buyerService.getAllAddress(id));
+    }
+
+    @DeleteMapping("/deleteAddress/{addId}")
+    public ResponseEntity<?> deleteAddress(@AuthenticationPrincipal(expression = "id") UUID id
+                                         , @PathVariable UUID addId) {
+        buyerService.deleteAddress(id, addId);
         return ResponseEntity.status(HttpStatus.CREATED.value()).build();
     }
 
