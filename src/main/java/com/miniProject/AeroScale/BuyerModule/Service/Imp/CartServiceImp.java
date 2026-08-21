@@ -106,6 +106,7 @@ public class CartServiceImp implements CartService {
         Product product =  item.getProduct();
         return CartResponse.builder()
                 .id(item.getId())
+                .productId(product.getId())
                 .itemCount(item.getItemCount())
                 .itemName(product.getName())
                 .pricePerItem(product.getPrice())
