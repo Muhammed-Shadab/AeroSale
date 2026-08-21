@@ -1,5 +1,6 @@
 package com.miniProject.AeroScale.product.exception;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -8,6 +9,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -56,6 +58,24 @@ public class ProductExceptionHandler {
     public ProblemDetail handleOptimisticLockingFailureException(OptimisticLockingFailureException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "The product was updated by another transaction. Please refresh and try again.");
         problemDetail.setTitle("Conflict - Concurrent Update");
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
+    }
+
+    // 5. Handle Invalid UUIDs in the URL : like GET /api/v1/catalog/products/abc-123
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ProblemDetail handleTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid format for parameter: " + ex.getName());
+        problemDetail.setTitle("Invalid URL Parameter");
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
+    }
+
+    // 6. Handle Database Constraint Violations : for cases when a rare database-level constraint fails (e.g., someone bypassed validation and tried to insert a 200-character string into a 100-character column).
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Database constraint violation. Check your data constraints.");
+        problemDetail.setTitle("Data Integrity Error");
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
     }

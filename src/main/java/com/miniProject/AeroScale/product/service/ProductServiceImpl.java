@@ -68,7 +68,12 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public void deleteProduct(UUID productId, UUID sellerId) {
         Product product = fetchProduct(productId, sellerId);
-        productRepository.delete(product);
+
+        // IMP : DO NOT DO HARD DELETE..WE DO Soft delete: Change status to ARCHIVED and set stock to 0
+        product.setStatus(Product.ProductStatus.ARCHIVED);
+        product.setStockQuantity(0);
+
+        productRepository.save(product);
     }
 
     // Helper method to enforce data isolation (DRY Principle)
