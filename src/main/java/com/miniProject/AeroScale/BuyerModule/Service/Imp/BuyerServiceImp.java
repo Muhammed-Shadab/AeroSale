@@ -62,6 +62,19 @@ public class BuyerServiceImp implements BuyerService {
         return BuyerAddressToAddAddressResponseConverter(savedAddress);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public AddAddressResponse getBuyerAddressForCheckout(UUID buyerId, UUID addressId) {
+        BuyerAddress address = buyerAddressRepository.findById(addressId)
+                .orElseThrow(() -> new RequiredThingsNotFoundException("Shipping address not found"));
+
+        if (!address.getBuyer().getId().equals(buyerId)) {
+            throw new RequiredThingsNotFoundException("Address does not belong to the current buyer");
+        }
+
+        return BuyerAddressToAddAddressResponseConverter(address);
+    }
+
     private AddAddressResponse BuyerAddressToAddAddressResponseConverter(BuyerAddress buyerAddress) {
         return AddAddressResponse.builder()
                 .addressLine1(buyerAddress.getAddressLine1())

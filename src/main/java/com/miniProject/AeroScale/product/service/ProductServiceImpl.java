@@ -76,6 +76,26 @@ public class ProductServiceImpl implements ProductService {
         productRepository.save(product);
     }
 
+    @Override
+    @Transactional
+    public ProductResponse reserveStockForCheckout(UUID productId, int quantity) {
+        // We use the raw repository findById because the Order module doesn't know the sellerId
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found"));
+
+        if (product.getStatus() != Product.ProductStatus.ACTIVE) {
+            throw new IllegalStateException("Product is no longer available: " + product.getName());
+        }
+
+        if (product.getStockQuantity() < quantity) {
+            throw new IllegalStateException("Insufficient stock for product: " + product.getName());
+        }
+
+        // Deduct stock (Hibernate dirty checking handles the save automatically at commit)
+        product.setStockQuantity(product.getStockQuantity() - quantity);
+
+        return ProductResponse.fromEntity(product);
+    }
     // Helper method to enforce data isolation (DRY Principle)
     private Product fetchProduct(UUID productId, UUID sellerId) {
         return productRepository.findByIdAndSellerId(productId, sellerId)

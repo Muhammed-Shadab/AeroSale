@@ -19,6 +19,8 @@ public interface ProductService {
 
     void deleteProduct(UUID productId ,  UUID sellerId);
 
+    ProductResponse reserveStockForCheckout(UUID productId, int quantity);
+
 
 
 }
