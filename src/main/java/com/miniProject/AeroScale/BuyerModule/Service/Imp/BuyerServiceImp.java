@@ -46,8 +46,9 @@ public class BuyerServiceImp implements BuyerService {
 
         if(count == 0) addAddressRequest.setDefault(true);
         else if(addAddressRequest.isDefault()) buyerAddressRepository.clearDefaultForBuyer(id);
-
+        System.out.println(addAddressRequest.getLabel());
         BuyerAddress buyerAddress = BuyerAddress.builder()
+                .addressLabel(addAddressRequest.getLabel())
                 .buyer(buyer)
                 .addressLabel(addAddressRequest.getLabel())
                 .addressLine1(addAddressRequest.getAddressLine1())
@@ -94,9 +95,31 @@ public class BuyerServiceImp implements BuyerService {
     @Override
     @Transactional
     public void deleteAddress(UUID id, UUID addId) {
+        // default wala thing is not handle handle it in the order service or here only
         BuyerAddress address = findAddressByBuyerOrThrow(addId, id);
-        boolean isDefault = address.isDefault();
+
         buyerAddressRepository.delete(address);
+    }
+
+    @Override
+    @Transactional
+    public void updateAddress(UUID id, UUID addId, AddAddressRequest newAddress) {
+        BuyerAddress address = findAddressByBuyerOrThrow(addId, id);
+
+        if(newAddress.isDefault() && !address.isDefault()) buyerAddressRepository.clearDefaultForBuyer(id);
+        System.out.println(newAddress.getLabel());
+        address.setAddressLabel(newAddress.getLabel());
+        address.setRecipientName(newAddress.getRecipientName());
+        address.setRecipientPhoneNo(newAddress.getPhoneNo());
+        address.setAddressLine1(newAddress.getAddressLine1());
+        address.setAddressLine2(newAddress.getAddressLine2());
+        address.setCity(newAddress.getCity());
+        address.setState(newAddress.getState());
+        address.setCountry(newAddress.getCountry());
+        address.setPincode(newAddress.getPincode());
+        address.setDefault(newAddress.isDefault());
+
+        buyerAddressRepository.save(address);
     }
 
     private BuyerAddress findAddressByBuyerOrThrow(UUID addId, UUID id) {

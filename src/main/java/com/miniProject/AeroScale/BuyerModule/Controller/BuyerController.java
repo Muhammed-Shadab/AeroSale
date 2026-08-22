@@ -57,6 +57,14 @@ public class BuyerController {
         return ResponseEntity.status(HttpStatus.CREATED.value()).build();
     }
 
+    @PutMapping("/updateAddress/{addId}")
+    public ResponseEntity<?> updateAddress(@AuthenticationPrincipal(expression = "id") UUID id
+                                            , @PathVariable UUID addId
+                                            , @Valid @RequestBody AddAddressRequest newAddress) {
+        buyerService.updateAddress(id, addId, newAddress);
+        return ResponseEntity.status(HttpStatus.CREATED.value()).build();
+    }
+
 
 
 

@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class AddAddressRequest {
 
+    @NotNull
     private BuyerAddress.AddressLabel label;
 
     @NotBlank(message = "Recipient Name is Required")

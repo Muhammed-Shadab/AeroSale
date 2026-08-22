@@ -5,6 +5,7 @@ import com.miniProject.AeroScale.AuthModule.Security.JwtAuthenticationFilter.Aut
 import com.miniProject.AeroScale.BuyerModule.DTO.Request.AddAddressRequest;
 import com.miniProject.AeroScale.BuyerModule.DTO.Request.BuyerProfileUpdateRequest;
 import com.miniProject.AeroScale.BuyerModule.DTO.Response.AddAddressResponse;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,4 +25,6 @@ public interface BuyerService {
     List<AddAddressResponse> getAllAddress(UUID id);
 
     void deleteAddress(UUID id, UUID addId);
+
+    void updateAddress(UUID id, UUID addId, @Valid AddAddressRequest newAddress);
 }
