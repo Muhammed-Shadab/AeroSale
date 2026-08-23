@@ -25,7 +25,6 @@ public class CartController {
     @GetMapping("/getCart")
     public ResponseEntity<List<CartResponse>> getAllCarts(@AuthenticationPrincipal(expression = "id") UUID id) {
         return ResponseEntity.status(HttpStatus.CREATED.value()).body(cartService.getAllCarts(id));
-
     }
 
     @PostMapping("/addToCart")

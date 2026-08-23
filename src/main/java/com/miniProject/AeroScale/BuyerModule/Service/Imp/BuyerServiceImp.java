@@ -46,7 +46,6 @@ public class BuyerServiceImp implements BuyerService {
 
         if(count == 0) addAddressRequest.setDefault(true);
         else if(addAddressRequest.isDefault()) buyerAddressRepository.clearDefaultForBuyer(id);
-        System.out.println(addAddressRequest.getLabel());
         BuyerAddress buyerAddress = BuyerAddress.builder()
                 .addressLabel(addAddressRequest.getLabel())
                 .buyer(buyer)
@@ -95,7 +94,7 @@ public class BuyerServiceImp implements BuyerService {
     @Override
     @Transactional
     public void deleteAddress(UUID id, UUID addId) {
-        // default wala thing is not handle handle it in the order service or here only
+        // default wala thing is not handle  it in the order service or here only
         BuyerAddress address = findAddressByBuyerOrThrow(addId, id);
 
         buyerAddressRepository.delete(address);
@@ -107,7 +106,7 @@ public class BuyerServiceImp implements BuyerService {
         BuyerAddress address = findAddressByBuyerOrThrow(addId, id);
 
         if(newAddress.isDefault() && !address.isDefault()) buyerAddressRepository.clearDefaultForBuyer(id);
-        System.out.println(newAddress.getLabel());
+
         address.setAddressLabel(newAddress.getLabel());
         address.setRecipientName(newAddress.getRecipientName());
         address.setRecipientPhoneNo(newAddress.getPhoneNo());
