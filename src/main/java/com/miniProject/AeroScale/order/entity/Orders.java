@@ -27,7 +27,16 @@ public class Orders {
     @Column(nullable = false, updatable = false)
     private UUID buyerId;
 
+
+    // This is used for idempotency checks
+    @Column(nullable = false, unique = true, updatable = false, length = 100)
+    private String idempotencyKey;
+
     // The Snapshot: Saves the address data inside the orders table permanently..required cause storing only addressId does not guarntee correctness cause the user can change the address of that uid...here it must be immutable as the order is an established contract
+
+
+
+
     @Embedded
     private OrderAddress shippingAddressSnapshot;
 

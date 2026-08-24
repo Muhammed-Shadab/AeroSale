@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -37,16 +38,23 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse createOrder(UUID buyerId, CheckoutRequest request) {
 
-        // 1. Fetch Cart
+        // 1. THE IDEMPOTENCY GUARD: Check if this checkout attempt already succeeded
+        Optional<Orders> existingOrder = orderRepository.findByIdempotencyKey(request.idempotencyKey());
+        if (existingOrder.isPresent()) {
+            // Silently return the existing order. No stock is deducted, cart is not touched again.
+            return OrderResponse.fromEntity(existingOrder.get());
+        }
+
+        // 2. Fetch Cart
         List<CartResponse> cartItems = cartService.getAllCarts(buyerId);
         if (cartItems == null || cartItems.isEmpty()) {
             throw new EmptyCartException("Cannot place an order with an empty cart");
         }
 
-        // 2. Fetch Validated Address Data via Buyer Service
+        // 3. Fetch Validated Address Data via Buyer Service
         AddAddressResponse addressResponse = buyerService.getBuyerAddressForCheckout(buyerId, request.shippingAddressId());
 
-        // 3. Create Address Snapshot
+        // 4. Create Address Snapshot
         OrderAddress snapshotAddress = OrderAddress.builder()
                 .recipientName(addressResponse.getRecipientName())
                 .recipientPhoneNo(addressResponse.getRecipientPhoneNo())
@@ -58,9 +66,10 @@ public class OrderServiceImpl implements OrderService {
                 .country(addressResponse.getCountry())
                 .build();
 
-        // 4. Initialize Order
+        // 5. Initialize Order
         Orders order = Orders.builder()
                 .buyerId(buyerId)
+                .idempotencyKey(request.idempotencyKey())
                 .shippingAddressSnapshot(snapshotAddress)
                 .status(Orders.OrderStatus.PENDING)
                 .totalAmount(BigDecimal.ZERO)
@@ -68,7 +77,7 @@ public class OrderServiceImpl implements OrderService {
 
         BigDecimal calculatedTotal = BigDecimal.ZERO;
 
-        // 5. Process Items & Deduct Stock via Product Service
+        // 6. Process Items & Deduct Stock via Product Service
         for (CartResponse cartItem : cartItems) {
 
             // This cleanly handles the lock, deduction, and returns the live price
@@ -92,10 +101,10 @@ public class OrderServiceImpl implements OrderService {
 
         order.setTotalAmount(calculatedTotal);
 
-        // 6. Save the Order
+        // 7. Save the Order
         Orders savedOrder = orderRepository.save(order);
 
-        // 7. Clear the Cart
+        // 8. Clear the Cart
         cartService.clearCart(buyerId);
 
         return OrderResponse.fromEntity(savedOrder);
