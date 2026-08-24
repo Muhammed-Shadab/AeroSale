@@ -1,6 +1,5 @@
 package com.miniProject.AeroScale.SellerModule.Entity;
 
-import com.miniProject.AeroScale.AuthModule.Entity.Users;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -31,7 +30,7 @@ public class Seller {
     private String gstin;
 
     @Column(length = 150)
-    private String bussinessAdress;
+    private String bussinessAddress;
 
     @Column(length = 50)
     private String wareHousePinCode;

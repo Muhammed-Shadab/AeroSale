@@ -35,7 +35,7 @@ public class AuthExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> methodArgumentNotValidException(MethodArgumentNotValidException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(ex.);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(ex.getMessage());
     }
 
 

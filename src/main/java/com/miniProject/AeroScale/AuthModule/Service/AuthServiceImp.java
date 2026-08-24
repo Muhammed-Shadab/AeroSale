@@ -78,7 +78,7 @@ public class AuthServiceImp implements AuthService{
             Seller seller = Seller.builder()
                     .id(user.getId())
                     .bussinessName(registerRequest.getFullName())
-                    .bussinessAdress(registerRequest.getBussinessAdress())
+                    .bussinessAddress(registerRequest.getBussinessAdress())
                     .wareHousePinCode(registerRequest.getWareHousePinCode())
                     .DateOfBirth(registerRequest.getDOB())
                     .sellerVerificationStatus(Seller.SellerVerificationStatus.PENDING)
