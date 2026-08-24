@@ -15,6 +15,6 @@ public class SellerController {
     @PutMapping("/updateProfile")
     public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfileRequest updateProfileRequest,
                                            @AuthenticationPrincipal(expression = "id") UUID id) {
-
+        return ResponseEntity.ok().build();
     }
 }
