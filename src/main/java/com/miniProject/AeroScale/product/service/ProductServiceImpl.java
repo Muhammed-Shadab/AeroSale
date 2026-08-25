@@ -28,7 +28,6 @@ public class ProductServiceImpl implements ProductService {
                 .name(request.name())
                 .description((request.description()))
                 .price(request.price())
-                .stockQuantity(request.stockQuantity())
                 .status(request.status())
                 .build();
         Product savedProduct = productRepository.save(product);
@@ -57,7 +56,6 @@ public class ProductServiceImpl implements ProductService {
         product.setName(request.name());
         product.setDescription(request.description());
         product.setPrice(request.price());
-        product.setStockQuantity(request.stockQuantity());
         product.setStatus(request.status());
 
         Product updatedProduct = productRepository.save(product);
@@ -69,17 +67,15 @@ public class ProductServiceImpl implements ProductService {
     public void deleteProduct(UUID productId, UUID sellerId) {
         Product product = fetchProduct(productId, sellerId);
 
-        // IMP : DO NOT DO HARD DELETE..WE DO Soft delete: Change status to ARCHIVED and set stock to 0
+        // IMP : DO NOT DO HARD DELETE..WE DO Soft delete: Change status to ARCHIVED.
         product.setStatus(Product.ProductStatus.ARCHIVED);
-        product.setStockQuantity(0);
 
         productRepository.save(product);
     }
 
     @Override
-    @Transactional
-    public ProductResponse reserveStockForCheckout(UUID productId, int quantity) {
-        // We use the raw repository findById because the Order module doesn't know the sellerId
+    @Transactional(readOnly = true)
+    public ProductResponse getProductForCheckout(UUID productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
@@ -87,15 +83,9 @@ public class ProductServiceImpl implements ProductService {
             throw new IllegalStateException("Product is no longer available: " + product.getName());
         }
 
-        if (product.getStockQuantity() < quantity) {
-            throw new IllegalStateException("Insufficient stock for product: " + product.getName());
-        }
-
-        // Deduct stock (Hibernate dirty checking handles the save automatically at commit)
-        product.setStockQuantity(product.getStockQuantity() - quantity);
-
         return ProductResponse.fromEntity(product);
     }
+
     // Helper method to enforce data isolation (DRY Principle)
     private Product fetchProduct(UUID productId, UUID sellerId) {
         return productRepository.findByIdAndSellerId(productId, sellerId)

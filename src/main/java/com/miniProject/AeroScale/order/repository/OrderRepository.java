@@ -17,4 +17,7 @@ public interface OrderRepository extends JpaRepository<Orders, UUID> {
 
     // Idempotency check
     Optional<Orders> findByIdempotencyKey(String idempotencyKey);
+
+    // Secure fetch for cancellation
+    Optional<Orders> findByIdAndBuyerId(UUID id, UUID buyerId);
 }

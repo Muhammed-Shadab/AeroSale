@@ -9,4 +9,5 @@ public interface OrderService {
 
     OrderResponse createOrder(UUID buyerId, CheckoutRequest request);
 
+    void cancelOrder(UUID buyerId, UUID orderId);
 }

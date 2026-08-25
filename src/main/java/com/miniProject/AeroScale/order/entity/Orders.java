@@ -34,9 +34,6 @@ public class Orders {
 
     // The Snapshot: Saves the address data inside the orders table permanently..required cause storing only addressId does not guarntee correctness cause the user can change the address of that uid...here it must be immutable as the order is an established contract
 
-
-
-
     @Embedded
     private OrderAddress shippingAddressSnapshot;
 

@@ -28,4 +28,14 @@ public class OrderController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @DeleteMapping("/{orderId}/cancel")
+    public ResponseEntity<Void> cancelOrder(
+            @PathVariable UUID orderId,
+            @AuthenticationPrincipal(expression = "id") UUID buyerId) {
+
+        orderService.cancelOrder(buyerId, orderId);
+
+        return ResponseEntity.noContent().build(); // 204 No Content is standard for DELETE/Cancel
+    }
 }

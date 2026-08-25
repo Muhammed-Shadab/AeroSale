@@ -19,9 +19,6 @@ public record ProductRequest(
         @DecimalMin(value = "0.01", message = "Price must be strictly greater than 0")
         BigDecimal price,
 
-        @NotNull(message = "Stock quantity is required")
-        @Min(value = 0, message = "Stock quantity cannot be negative")
-        Integer stockQuantity,
 
         @NotNull(message = "Product status is required")
         ProductStatus status

@@ -29,11 +29,12 @@ public class OrderExceptionHandler {
         return problem;
     }
 
-    // 3. Handle Product Constraints (Thrown from ProductService)
+    //3.  Catch the Vault's out-of-stock and missing inventory exceptions
     @ExceptionHandler(IllegalStateException.class)
-    public ProblemDetail handleIllegalState(IllegalStateException ex) {
+    public ProblemDetail handleInventoryStateExceptions(IllegalStateException ex) {
+        // We return a 409 CONFLICT because this is a flash sale collision
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
-        problem.setTitle("Item Unavailable");
+        problem.setTitle("Inventory Conflict");
         problem.setProperty("timestamp", Instant.now());
         return problem;
     }
