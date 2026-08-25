@@ -1,6 +1,6 @@
 package com.miniProject.AeroScale.product.service;
 
-
+import com.miniProject.AeroScale.inventory.service.InventoryService;
 import com.miniProject.AeroScale.product.dto.request.ProductRequest;
 import com.miniProject.AeroScale.product.dto.response.ProductResponse;
 import com.miniProject.AeroScale.product.entity.Product;
@@ -19,6 +19,7 @@ import java.util.UUID;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final InventoryService inventoryService;
 
     @Override
     @Transactional
@@ -31,6 +32,9 @@ public class ProductServiceImpl implements ProductService {
                 .status(request.status())
                 .build();
         Product savedProduct = productRepository.save(product);
+        // HERE WE Open the zero-stock ledger in the Vault immediately.this will create a zero stock row in the inventory table for this particular product.
+        inventoryService.initializeInventory(savedProduct.getId());
+
         return ProductResponse.fromEntity(savedProduct);
     }
 
@@ -67,7 +71,7 @@ public class ProductServiceImpl implements ProductService {
     public void deleteProduct(UUID productId, UUID sellerId) {
         Product product = fetchProduct(productId, sellerId);
 
-        // IMP : DO NOT DO HARD DELETE..WE DO Soft delete: Change status to ARCHIVED.
+        // IMP : DO NOT DO HARD DELETE.WE DO Soft delete: Change status to ARCHIVED.
         product.setStatus(Product.ProductStatus.ARCHIVED);
 
         productRepository.save(product);

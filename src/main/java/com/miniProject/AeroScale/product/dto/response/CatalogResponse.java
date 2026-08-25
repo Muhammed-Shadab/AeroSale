@@ -11,7 +11,6 @@ public record CatalogResponse(
         String name,
         String description,
         BigDecimal price,
-        Integer stockQuantity,
         ProductStatus status
 ) {
     public static CatalogResponse fromEntity(Product product) {
@@ -20,7 +19,6 @@ public record CatalogResponse(
                 product.getName(),
                 product.getDescription(),
                 product.getPrice(),
-                product.getStockQuantity(),
                 product.getStatus()
         );
     }

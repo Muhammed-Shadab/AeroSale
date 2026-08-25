@@ -38,4 +38,11 @@ public class OrderController {
 
         return ResponseEntity.noContent().build(); // 204 No Content is standard for DELETE/Cancel
     }
+
+    // PLACEHOLDER: WE Call this from Postman to simulate a successful payment
+    @PostMapping("/{orderId}/simulate-payment")
+    public ResponseEntity<Void> simulatePayment(@PathVariable UUID orderId) {
+        orderService.confirmOrderPayment(orderId);
+        return ResponseEntity.ok().build();
+    }
 }

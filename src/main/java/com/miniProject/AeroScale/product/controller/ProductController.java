@@ -1,6 +1,8 @@
 package com.miniProject.AeroScale.product.controller;
 
+import com.miniProject.AeroScale.inventory.service.InventoryService;
 import com.miniProject.AeroScale.product.dto.request.ProductRequest;
+import com.miniProject.AeroScale.product.dto.request.RestockRequest;
 import com.miniProject.AeroScale.product.dto.response.ProductResponse;
 import com.miniProject.AeroScale.product.service.ProductService;
 import jakarta.validation.Valid;
@@ -23,6 +25,8 @@ import java.util.UUID;
 public class ProductController {
 
     private final ProductService productService;
+    private final InventoryService inventoryService;
+
 
     @PostMapping
     public ResponseEntity<ProductResponse> createProduct(
@@ -65,6 +69,23 @@ public class ProductController {
 
         return ResponseEntity.ok(response);
     }
+
+    @PatchMapping("/{productId}/stock")
+    public ResponseEntity<Void> restockProduct(
+            @PathVariable UUID productId,
+            @Valid @RequestBody RestockRequest request,
+            @AuthenticationPrincipal(expression = "id") UUID sellerId) {
+
+        // 1. Verify the seller actually owns this product
+        // If they don't, this throws a ProductNotFoundException and stops execution.
+        productService.getProductByIdAndSellerId(productId, sellerId);
+
+        // 2. Now that we trust the caller, we add the stock.
+        inventoryService.addStock(productId, request.quantity());
+
+        return ResponseEntity.ok().build();
+    }
+
 
     @DeleteMapping("/{productId}")
     public ResponseEntity<Void> deleteProduct(

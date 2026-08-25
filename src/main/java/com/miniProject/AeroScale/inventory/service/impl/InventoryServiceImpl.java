@@ -107,6 +107,39 @@ public class InventoryServiceImpl implements InventoryService {
         }
     }
 
+    @Override
+    @Transactional
+    public void initializeInventory(UUID productId) {
+        // Prevent duplicate ledger creation
+        if (inventoryRepository.findByProductId(productId).isPresent()) {
+            throw new IllegalStateException("Inventory ledger already exists for this product");
+        }
+
+        Inventory newLedger = Inventory.builder()
+                .productId(productId)
+                .totalStock(0)
+                .lockedStock(0)
+                .build();
+
+        inventoryRepository.save(newLedger);
+    }
+
+    @Override
+    @Transactional
+    public void addStock(UUID productId, int additionalQuantity) {
+        if (additionalQuantity <= 0) {
+            throw new IllegalArgumentException("Restock quantity must be strictly greater than zero");
+        }
+
+        Inventory inventory = inventoryRepository.findByProductId(productId)
+                .orElseThrow(() -> new IllegalStateException("Inventory ledger not found for this product"));
+
+        // Add the new shipment to the physical total
+        inventory.setTotalStock(inventory.getTotalStock() + additionalQuantity);
+
+        log.info("Restocked {} units for product {}. New Total: {}",
+                additionalQuantity, productId, inventory.getTotalStock());
+    }
     // Helper method
     private InventoryReservation getPendingReservationOrThrow(UUID orderId, UUID productId) {
         InventoryReservation reservation = reservationRepository.findByOrderIdAndProductId(orderId, productId)

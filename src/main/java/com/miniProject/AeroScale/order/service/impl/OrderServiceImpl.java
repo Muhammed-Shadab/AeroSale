@@ -129,4 +129,23 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(Orders.OrderStatus.CANCELLED);
         orderRepository.save(order);
     }
+
+    @Override
+    @Transactional
+    public void confirmOrderPayment(UUID orderId) {
+        Orders order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (order.getStatus() != Orders.OrderStatus.PENDING) {
+            throw new IllegalStateException("Only PENDING orders can be confirmed");
+        }
+
+        // Tell the Vault to permanently deduct the physical stock
+        for (OrderItem item : order.getOrderItems()) {
+            inventoryService.confirmStock(orderId, item.getProductId());
+        }
+
+        order.setStatus(Orders.OrderStatus.CONFIRMED);
+        orderRepository.save(order);
+    }
 }

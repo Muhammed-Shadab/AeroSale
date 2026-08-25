@@ -10,4 +10,7 @@ public interface OrderService {
     OrderResponse createOrder(UUID buyerId, CheckoutRequest request);
 
     void cancelOrder(UUID buyerId, UUID orderId);
+
+    // Simulates a successful payment webhook : we do not have a payment service right now, for now we just simulate.
+    void confirmOrderPayment(UUID orderId);
 }

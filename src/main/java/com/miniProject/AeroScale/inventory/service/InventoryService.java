@@ -28,4 +28,16 @@ public interface InventoryService {
      * Called by the Order Module if a buyer explicitly clicks "Cancel Order" before paying.
      */
     void releaseStock(UUID orderId, UUID productId);
+
+    /**
+     * Called by the Product Module when a new item is listed.
+     * Initializes the inventory ledger with 0 stock.
+     */
+    void initializeInventory(UUID productId);
+
+    /**
+     * Called when a seller adds new physical stock.
+     * Increases the total stock in the warehouse.
+     */
+    void addStock(UUID productId, int additionalQuantity);
 }
