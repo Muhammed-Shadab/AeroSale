@@ -24,4 +24,10 @@ public class SellerController {
         sellerService.updateProfile(updateProfileRequest, id);
         return ResponseEntity.status(HttpStatus.CREATED.value()).build();
     }
+
+    @PutMapping("/logout")
+    public ResponseEntity<?> logout(@AuthenticationPrincipal(expression = "id") UUID id) {
+
+        return ResponseEntity.status(HttpStatus.CREATED.value()).build();
+    }
 }
