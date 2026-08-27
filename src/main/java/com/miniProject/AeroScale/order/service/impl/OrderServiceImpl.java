@@ -34,7 +34,7 @@ public class OrderServiceImpl implements OrderService {
     private final CartService cartService;
     private final BuyerService buyerService;
     private final ProductService productService;
-    private final InventoryService inventoryService; // NEW: The Vault
+    private final InventoryService inventoryService;
 
     @Override
     @Transactional
