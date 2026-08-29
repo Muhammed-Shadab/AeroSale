@@ -25,4 +25,7 @@ public class SellerController {
         return ResponseEntity.status(HttpStatus.CREATED.value()).build();
     }
 
+    @PostMapping("/uodateBankDetails")
+    public ResponseEntity<?> updateBankDetails()
+
 }
