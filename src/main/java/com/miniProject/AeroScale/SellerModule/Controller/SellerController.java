@@ -28,6 +28,7 @@ public class SellerController {
     @PostMapping("/uodateBankDetails")
     public ResponseEntity<?> updateBankDetails() [
             yes doing an empty commit dont look bitch;
+            yes doing an another empty commit dont look bitch;
             ]
 
 }
