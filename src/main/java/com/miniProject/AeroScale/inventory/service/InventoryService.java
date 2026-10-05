@@ -1,7 +1,9 @@
 package com.miniProject.AeroScale.inventory.service;
 
+import com.miniProject.AeroScale.inventory.entity.Inventory;
 import com.miniProject.AeroScale.inventory.entity.InventoryReservation;
 
+import java.util.EmptyStackException;
 import java.util.UUID;
 
 public interface InventoryService {
@@ -40,4 +42,6 @@ public interface InventoryService {
      * Increases the total stock in the warehouse.
      */
     void addStock(UUID productId, int additionalQuantity);
+
+    int getStock(UUID productId);
 }

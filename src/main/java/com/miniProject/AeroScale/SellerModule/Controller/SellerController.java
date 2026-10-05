@@ -25,10 +25,4 @@ public class SellerController {
         return ResponseEntity.status(HttpStatus.CREATED.value()).build();
     }
 
-    @PostMapping("/uodateBankDetails")
-    public ResponseEntity<?> updateBankDetails() [
-            yes doing an empty commit dont look bitch;
-            yes doing an another empty commit dont look bitch;
-            ]
-
 }

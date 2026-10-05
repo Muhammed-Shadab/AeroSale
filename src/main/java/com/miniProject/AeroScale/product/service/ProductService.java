@@ -21,7 +21,4 @@ public interface ProductService {
 
     // Internal cross-module method for Order module
     ProductResponse getProductForCheckout(UUID productId);
-
-
-
 }

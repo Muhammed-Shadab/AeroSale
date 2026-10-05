@@ -5,6 +5,8 @@ import com.miniProject.AeroScale.inventory.entity.InventoryReservation;
 import com.miniProject.AeroScale.inventory.repository.InventoryRepository;
 import com.miniProject.AeroScale.inventory.repository.InventoryReservationRepository;
 import com.miniProject.AeroScale.inventory.service.InventoryService;
+import com.miniProject.AeroScale.order.exception.ProductIsNotAvailable;
+import com.miniProject.AeroScale.product.exception.ProductNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.EmptyStackException;
 import java.util.List;
 import java.util.UUID;
 
@@ -140,6 +143,8 @@ public class InventoryServiceImpl implements InventoryService {
         log.info("Restocked {} units for product {}. New Total: {}",
                 additionalQuantity, productId, inventory.getTotalStock());
     }
+
+
     // Helper method
     private InventoryReservation getPendingReservationOrThrow(UUID orderId, UUID productId) {
         InventoryReservation reservation = reservationRepository.findByOrderIdAndProductId(orderId, productId)
@@ -150,4 +155,13 @@ public class InventoryServiceImpl implements InventoryService {
         }
         return reservation;
     }
+
+    @Override
+    public int getStock(UUID productId) {
+        Inventory inventory = inventoryRepository.findByProductId(productId).
+                orElseThrow(() -> new ProductIsNotAvailable("Product Not Available!!"));
+        return inventory.getAvailableStock();
+    }
+
+
 }

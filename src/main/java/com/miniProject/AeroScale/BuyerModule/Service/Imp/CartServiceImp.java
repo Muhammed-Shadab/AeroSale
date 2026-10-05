@@ -11,6 +11,8 @@ import com.miniProject.AeroScale.BuyerModule.Exception.RequiredThingsNotFoundExc
 import com.miniProject.AeroScale.BuyerModule.Repository.BuyerRepository;
 import com.miniProject.AeroScale.BuyerModule.Repository.CartRespository;
 import com.miniProject.AeroScale.BuyerModule.Service.CartService;
+import com.miniProject.AeroScale.inventory.entity.Inventory;
+import com.miniProject.AeroScale.inventory.service.InventoryService;
 import com.miniProject.AeroScale.product.entity.Product;
 import com.miniProject.AeroScale.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class CartServiceImp implements CartService {
     private final CartRespository cartRespository;
     private final BuyerRepository buyerRepository;
     private final ProductRepository productRepository;
+    private final InventoryService inventoryService;
 
 
     @Override
@@ -110,15 +113,16 @@ public class CartServiceImp implements CartService {
                 .itemCount(item.getItemCount())
                 .itemName(product.getName())
                 .pricePerItem(product.getPrice())
-                .CurrentStockOfProduct(product.getStockQuantity())
+                .CurrentStockOfProduct(inventoryService.getStock(product.getId()))
                 .createdAt(item.getCreatedAt())
                 .updatedAt(item.getUpdatedAt())
                 .build();
     }
 
     private void assertStockAvailable(Product product, int reqQuantity) {
-        if(product.getStockQuantity() == null || product.getStockQuantity() < reqQuantity) {
-            throw new InsufficientStockException("Only " + (product.getStockQuantity() == null ? 0: product.getStockQuantity())
+        int stockCount = inventoryService.getStock(product.getId());
+        if(stockCount < reqQuantity) {
+            throw new InsufficientStockException("Only " + (stockCount)
                     + " Units of " + product.getName() + " are available");
         }
     }
