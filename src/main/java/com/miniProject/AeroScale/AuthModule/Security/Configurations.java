@@ -33,7 +33,8 @@ public class Configurations {
                 .sessionManagement(SessionManagementConfigurer ->
                         SessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((authorize) -> (authorize)
-                        .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/refreshToken").permitAll()
+                        .requestMatchers("/api/auth/register", "/api/auth/login",
+                                "/api/auth/refreshToken", "/api/pay/*","/temp.html").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

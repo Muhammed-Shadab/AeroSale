@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>working</h1>
+<button onclick="payNow()">pay</button>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    async function payNow() {
+
+        const response = await fetch("http://localhost:8080/api/pay/test", {
+            method: "POST"
+        });
+
+        const order = await response.json();
+        console.log(order);
+
+        const options = {
+
+            key: order.keyID,
+
+            amount: order.amount,
+
+            currency: "INR",
+
+            name: "Flash Sale",
+
+            description: "Flash Sale Purchase",
+
+            order_id: order.orderId,
+
+            handler: function (response) {
+                console.log(response);
+            }
+        };
+        console.log(options);
+        const razorpay = new Razorpay(options);
+
+        razorpay.open();
+    }
+</script>
+</body>
+</html>
