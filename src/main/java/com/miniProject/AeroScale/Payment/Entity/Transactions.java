@@ -20,12 +20,15 @@ public class Transactions {
 
     @Id
     @UuidGenerator
+    private UUID id;
+
+
     @Column(updatable = false)
     private UUID orderId;
 
     @NotNull
     @Column(unique = true, updatable = false)
-    private UUID RazorPayoOrderId;
+    private UUID RazorPayOrderId;
 
     @NotNull
     @Column(updatable = false)
@@ -33,6 +36,8 @@ public class Transactions {
 
 
     private String paymentMethod;
+
+    @Column(unique = true)
     private String paymentId;
     private String signature;
 
