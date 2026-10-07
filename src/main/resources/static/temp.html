@@ -16,7 +16,6 @@
         });
 
         const order = await response.json();
-        console.log(order);
 
         const options = {
 
@@ -26,9 +25,9 @@
 
             currency: "INR",
 
-            name: "Flash Sale",
+            name: "AeroScale",
 
-            description: "Flash Sale Purchase",
+            description: "AeroScale Purchase",
 
             order_id: order.orderId,
 
@@ -36,9 +35,7 @@
                 console.log(response);
             }
         };
-        console.log(options);
         const razorpay = new Razorpay(options);
-
         razorpay.open();
     }
 </script>

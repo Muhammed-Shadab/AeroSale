@@ -11,7 +11,4 @@ public record CheckoutRequest(
 
         @NotBlank(message = "Idempotency key is required to prevent duplicate orders")
         String idempotencyKey
-
-
-
 ) {}

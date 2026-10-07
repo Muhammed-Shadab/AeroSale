@@ -15,9 +15,11 @@ public record OrderResponse(
         BigDecimal totalAmount,
         String status,
         List<OrderItemResponse> items,
-        Instant createdAt
+        Instant createdAt,
+        String razorPayOrderid,
+        String rzpKey
 ) {
-    public static OrderResponse fromEntity(Orders order) {
+    public static OrderResponse fromEntity(Orders order, String razorPayOrderid, String key) {
 
         List<OrderItemResponse> itemResponses = order.getOrderItems().stream()
                 .map(OrderItemResponse::fromEntity)
@@ -30,7 +32,9 @@ public record OrderResponse(
                 order.getTotalAmount(),
                 order.getStatus().name(),
                 itemResponses,
-                order.getCreatedAt()
+                order.getCreatedAt(),
+                razorPayOrderid,
+                key
         );
 
     }

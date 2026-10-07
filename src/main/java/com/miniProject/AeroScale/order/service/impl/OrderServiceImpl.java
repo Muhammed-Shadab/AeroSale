@@ -4,8 +4,11 @@ import com.miniProject.AeroScale.BuyerModule.DTO.Response.AddAddressResponse;
 import com.miniProject.AeroScale.BuyerModule.DTO.Response.CartResponse;
 import com.miniProject.AeroScale.BuyerModule.Service.BuyerService;
 import com.miniProject.AeroScale.BuyerModule.Service.CartService;
+import com.miniProject.AeroScale.Payment.DTO.Response.RazorPayOrderResponse;
+import com.miniProject.AeroScale.Payment.Service.PaymentService;
 import com.miniProject.AeroScale.inventory.service.InventoryService;
 import com.miniProject.AeroScale.order.dto.request.CheckoutRequest;
+
 import com.miniProject.AeroScale.order.dto.response.OrderResponse;
 import com.miniProject.AeroScale.order.entity.OrderAddress;
 import com.miniProject.AeroScale.order.entity.OrderItem;
@@ -15,7 +18,9 @@ import com.miniProject.AeroScale.order.repository.OrderRepository;
 import com.miniProject.AeroScale.order.service.OrderService;
 import com.miniProject.AeroScale.product.dto.response.ProductResponse;
 import com.miniProject.AeroScale.product.service.ProductService;
+import com.razorpay.RazorpayException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +33,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
+    @Value("${razorpay-key}")
+    private String key;
+
     private final OrderRepository orderRepository;
 
     // Strict Microservice Contracts
@@ -35,15 +43,16 @@ public class OrderServiceImpl implements OrderService {
     private final BuyerService buyerService;
     private final ProductService productService;
     private final InventoryService inventoryService;
+    private final PaymentService paymentService;
 
     @Override
     @Transactional
-    public OrderResponse createOrder(UUID buyerId, CheckoutRequest request) {
+    public OrderResponse createOrder(UUID buyerId, CheckoutRequest request) throws RazorpayException {
 
         // 1. IDEMPOTENCY GUARD: Check if this checkout attempt already succeeded
         Optional<Orders> existingOrder = orderRepository.findByIdempotencyKey(request.idempotencyKey());
         if (existingOrder.isPresent()) {
-            return OrderResponse.fromEntity(existingOrder.get());
+            return OrderResponse.fromEntity(existingOrder.get(), paymentService.getRazorPayOrderId(existingOrder.get().getId()), key);
         }
 
         // 2. Fetch Cart
@@ -106,7 +115,8 @@ public class OrderServiceImpl implements OrderService {
         Orders savedOrder = orderRepository.save(order);
         cartService.clearCart(buyerId);
 
-        return OrderResponse.fromEntity(savedOrder);
+        RazorPayOrderResponse orderResponse = paymentService.createRazorPayOrder(savedOrder);
+        return OrderResponse.fromEntity(savedOrder, orderResponse.getOrderId(), key);
     }
 
     @Override

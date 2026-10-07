@@ -3,6 +3,7 @@ package com.miniProject.AeroScale.order.controller;
 import com.miniProject.AeroScale.order.dto.request.CheckoutRequest;
 import com.miniProject.AeroScale.order.dto.response.OrderResponse;
 import com.miniProject.AeroScale.order.service.OrderService;
+import com.razorpay.RazorpayException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,7 +23,7 @@ public class OrderController {
     @PostMapping("/checkout")
     public ResponseEntity<OrderResponse> checkout(
             @Valid @RequestBody CheckoutRequest request,
-            @AuthenticationPrincipal(expression = "id") UUID buyerId) {
+            @AuthenticationPrincipal(expression = "id") UUID buyerId) throws RazorpayException {
 
         OrderResponse response = orderService.createOrder(buyerId, request);
 
