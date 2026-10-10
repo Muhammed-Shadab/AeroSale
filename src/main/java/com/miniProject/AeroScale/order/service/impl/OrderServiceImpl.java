@@ -6,6 +6,7 @@ import com.miniProject.AeroScale.BuyerModule.Service.BuyerService;
 import com.miniProject.AeroScale.BuyerModule.Service.CartService;
 import com.miniProject.AeroScale.Payment.DTO.Response.RazorPayOrderResponse;
 import com.miniProject.AeroScale.Payment.Service.PaymentService;
+import com.miniProject.AeroScale.flashsale.service.FlashSaleService;
 import com.miniProject.AeroScale.inventory.service.InventoryService;
 import com.miniProject.AeroScale.order.dto.request.CheckoutRequest;
 
@@ -37,6 +38,7 @@ public class OrderServiceImpl implements OrderService {
     private String key;
 
     private final OrderRepository orderRepository;
+    private final FlashSaleService flashSaleService;
 
     // Strict Microservice Contracts
     private final CartService cartService;
@@ -92,6 +94,8 @@ public class OrderServiceImpl implements OrderService {
 
             // Fetch read-only price data
             ProductResponse productResponse = productService.getProductForCheckout(cartItem.getProductId());
+
+            flashSaleService.validateFlashSalePurchase(cartItem.getProductId(), cartItem.getItemCount());
 
             // Lock the stock in the Vault (Throws exception if unavailable)
             inventoryService.reserveStock(cartItem.getProductId(), orderId, cartItem.getItemCount());
