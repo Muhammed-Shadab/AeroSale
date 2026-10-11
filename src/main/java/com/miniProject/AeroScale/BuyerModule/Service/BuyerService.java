@@ -5,7 +5,9 @@ import com.miniProject.AeroScale.AuthModule.Security.JwtAuthenticationFilter.Aut
 import com.miniProject.AeroScale.BuyerModule.DTO.Request.AddAddressRequest;
 import com.miniProject.AeroScale.BuyerModule.DTO.Request.BuyerProfileUpdateRequest;
 import com.miniProject.AeroScale.BuyerModule.DTO.Response.AddAddressResponse;
+import com.miniProject.AeroScale.BuyerModule.DTO.Response.BuyerProfileResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,9 +15,7 @@ import java.util.UUID;
 
 @Service
 public interface BuyerService {
-
-
-    void updateProfile(BuyerProfileUpdateRequest buyerProfileUpdateRequest, AuthenticatedObject authenticatedObject);
+    void updateProfile(BuyerProfileUpdateRequest buyerProfileUpdateRequest,  UUID id);
 
     AddAddressResponse addAddress(AddAddressRequest addAddressRequest, UUID id);
 
@@ -27,4 +27,6 @@ public interface BuyerService {
     void deleteAddress(UUID id, UUID addId);
 
     void updateAddress(UUID id, UUID addId, @Valid AddAddressRequest newAddress);
+
+    BuyerProfileResponse getBuyerProfile(UUID id, String email);
 }

@@ -23,6 +23,7 @@ public class CartResponse {
     private int CurrentStockOfProduct;
     private Instant createdAt;
     private Instant updatedAt;
+    private String imageUrl;
 
 
 

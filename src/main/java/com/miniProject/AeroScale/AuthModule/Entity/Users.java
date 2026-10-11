@@ -6,10 +6,12 @@ import com.miniProject.AeroScale.SellerModule.Entity.Seller;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Past;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.aspectj.lang.annotation.After;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.Instant;

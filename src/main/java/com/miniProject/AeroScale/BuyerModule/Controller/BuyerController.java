@@ -6,6 +6,7 @@ import com.miniProject.AeroScale.BuyerModule.DTO.Request.AddAddressRequest;
 import com.miniProject.AeroScale.BuyerModule.DTO.Request.BuyerProfileUpdateRequest;
 import com.miniProject.AeroScale.BuyerModule.DTO.Request.ItemDataForCart;
 import com.miniProject.AeroScale.BuyerModule.DTO.Response.AddAddressResponse;
+import com.miniProject.AeroScale.BuyerModule.DTO.Response.BuyerProfileResponse;
 import com.miniProject.AeroScale.BuyerModule.Entity.Buyer;
 import com.miniProject.AeroScale.BuyerModule.Service.BuyerService;
 import jakarta.validation.Valid;
@@ -32,9 +33,9 @@ public class BuyerController {
 
     @PostMapping("/updateProfile")
     public ResponseEntity<?> updateProfile(@Valid @RequestBody BuyerProfileUpdateRequest buyerProfileUpdateRequest,
-                                           @AuthenticationPrincipal(expression = "id") AuthenticatedObject authenticatedObject) {
+                                           @AuthenticationPrincipal(expression = "id") UUID id) {
 
-            buyerService.updateProfile(buyerProfileUpdateRequest, authenticatedObject);
+            buyerService.updateProfile(buyerProfileUpdateRequest, id);
             return ResponseEntity.status(HttpStatus.CREATED.value()).build();
     }
 
@@ -63,6 +64,12 @@ public class BuyerController {
                                             , @Valid @RequestBody AddAddressRequest newAddress) {
         buyerService.updateAddress(id, addId, newAddress);
         return ResponseEntity.status(HttpStatus.CREATED.value()).build();
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<BuyerProfileResponse> getBuyerProfile(@AuthenticationPrincipal(expression = "id") UUID id,
+                                                                @AuthenticationPrincipal(expression = "email") String email) {
+        return ResponseEntity.ok(buyerService.getBuyerProfile(id, email));
     }
 
 

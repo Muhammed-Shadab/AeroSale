@@ -3,6 +3,7 @@ package com.miniProject.AeroScale.BuyerModule.Service.Imp;
 import com.miniProject.AeroScale.BuyerModule.DTO.Request.AddAddressRequest;
 import com.miniProject.AeroScale.BuyerModule.DTO.Request.BuyerProfileUpdateRequest;
 import com.miniProject.AeroScale.BuyerModule.DTO.Response.AddAddressResponse;
+import com.miniProject.AeroScale.BuyerModule.DTO.Response.BuyerProfileResponse;
 import com.miniProject.AeroScale.BuyerModule.Entity.Buyer;
 import com.miniProject.AeroScale.BuyerModule.Entity.BuyerAddress;
 import com.miniProject.AeroScale.BuyerModule.Exception.RequiredThingsNotFoundException;
@@ -11,6 +12,8 @@ import com.miniProject.AeroScale.BuyerModule.Repository.BuyerRepository;
 import com.miniProject.AeroScale.BuyerModule.Service.BuyerService;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import com.miniProject.AeroScale.AuthModule.Security.JwtAuthenticationFilter.AuthenticatedObject;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,9 +31,8 @@ public class BuyerServiceImp implements BuyerService {
 
     @Override
     @Transactional
-    public void updateProfile(BuyerProfileUpdateRequest buyerProfileUpdateRequest,AuthenticatedObject authenticatedObject) {
-        UUID id = authenticatedObject.id();
-        Buyer buyer = findBuyerOrThrow(authenticatedObject.id());
+    public void updateProfile(BuyerProfileUpdateRequest buyerProfileUpdateRequest, @AuthenticationPrincipal(expression = "id") UUID id) {
+        Buyer buyer  = findBuyerOrThrow(id);
 
         buyer.setFullName(buyerProfileUpdateRequest.getFullName());
         buyer.setDateOfBirth(buyerProfileUpdateRequest.getDob());
@@ -119,6 +121,20 @@ public class BuyerServiceImp implements BuyerService {
         address.setDefault(newAddress.isDefault());
 
         buyerAddressRepository.save(address);
+    }
+
+    @Override
+    public BuyerProfileResponse getBuyerProfile(UUID id, String email) {
+        Buyer buyer  = findBuyerOrThrow(id);
+
+        return BuyerProfileResponse.builder()
+                .dob(buyer.getDateOfBirth())
+                .email(email)
+                .fullName(buyer.getFullName())
+                .loyaltyPoint(buyer.getLoyaltyPoint())
+                .walletBalance(buyer.getWalletBalance())
+                .id(buyer.getId())
+                .build();
     }
 
     private BuyerAddress findAddressByBuyerOrThrow(UUID addId, UUID id) {
