@@ -1,5 +1,6 @@
 package com.miniProject.AeroScale.product.dto.response;
 
+import com.miniProject.AeroScale.flashsale.dto.response.FlashSaleInfo;
 import com.miniProject.AeroScale.product.entity.Product;
 import com.miniProject.AeroScale.product.entity.Product.ProductStatus;
 
@@ -11,15 +12,21 @@ public record CatalogResponse(
         String name,
         String description,
         BigDecimal price,
-        ProductStatus status
+        ProductStatus status,
+        String imageUrl,
+        Integer availableStock,
+        FlashSaleInfo flashSale
 ) {
-    public static CatalogResponse fromEntity(Product product) {
+    public static CatalogResponse fromEntity(Product p, Integer availableStock, FlashSaleInfo flashSale) {
         return new CatalogResponse(
-                product.getId(),
-                product.getName(),
-                product.getDescription(),
-                product.getPrice(),
-                product.getStatus()
+                p.getId(),
+                p.getName(),
+                p.getDescription(),
+                p.getPrice(),
+                p.getStatus(),
+                p.getImageUrl(),
+                availableStock,
+                flashSale
         );
     }
 }

@@ -79,4 +79,13 @@ public class ProductExceptionHandler {
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
     }
+
+    // 7. Galat sort field, ya service se aaya IllegalArgumentException
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problemDetail.setTitle("Invalid Request");
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
+    }
 }

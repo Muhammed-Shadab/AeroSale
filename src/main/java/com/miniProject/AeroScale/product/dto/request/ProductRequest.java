@@ -22,5 +22,6 @@ public record ProductRequest(
 
         @NotNull(message = "Product status is required")
         ProductStatus status
+
 ) {}
 

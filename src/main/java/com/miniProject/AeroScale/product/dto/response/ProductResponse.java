@@ -12,9 +12,11 @@ public record ProductResponse(
         String name,
         String description,
         BigDecimal price,
+        String imageUrl,
         Product.ProductStatus status,
         Instant createdAt,
         Instant updatedAt
+
 ) {
     public static ProductResponse fromEntity(Product product) {
         return new ProductResponse(
@@ -23,6 +25,7 @@ public record ProductResponse(
                 product.getName(),
                 product.getDescription(),
                 product.getPrice(),
+                product.getImageUrl(),
                 product.getStatus(),
                 product.getCreatedAt(),
                 product.getUpdatedAt()

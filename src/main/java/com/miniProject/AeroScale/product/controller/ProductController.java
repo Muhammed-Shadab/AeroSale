@@ -30,13 +30,19 @@ public class ProductController {
     private final ProductService productService;
     private final InventoryService inventoryService;
 
+    private static final long MAX_IMAGE_BYTES = 5L * 1024 * 1024;
 
-    @PostMapping
+    private final ImageUploadService imageUploadService;
+
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProductResponse> createProduct(
             @AuthenticationPrincipal(expression = "id") UUID sellerId,
-            @Valid @RequestBody ProductRequest request) {
+            @Valid @RequestPart("product") ProductRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
 
-        ProductResponse response = productService.createProduct(sellerId, request);
+        String imageUrl = uploadIfPresent(image);
+        ProductResponse response = productService.createProduct(sellerId, request, imageUrl);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -61,15 +67,15 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{productId}")
+    @PutMapping(value = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProductResponse> updateProduct(
             @AuthenticationPrincipal(expression = "id") UUID sellerId,
             @PathVariable UUID productId,
-            @Valid @RequestBody ProductRequest request) {
+            @Valid @RequestPart("product") ProductRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
 
-        ProductResponse response =
-                productService.updateProduct(productId, sellerId, request);
-
+        String imageUrl = uploadIfPresent(image);
+        ProductResponse response = productService.updateProduct(productId, sellerId, request, imageUrl);
         return ResponseEntity.ok(response);
     }
 
@@ -98,4 +104,16 @@ public class ProductController {
         productService.deleteProduct(productId, sellerId);
         return ResponseEntity.noContent().build();
     }
+
+    /** Image nahi aayi to null. Galat type ya bahut badi file par 400 (IllegalArgumentException handler se). */
+    private String uploadIfPresent(MultipartFile image) {
+        if (image == null || image.isEmpty()) return null;
+        String type = image.getContentType();
+        if (type == null || !type.startsWith("image/"))
+            throw new IllegalArgumentException("Only image files are allowed");
+        if (image.getSize() > MAX_IMAGE_BYTES)
+            throw new IllegalArgumentException("Image must be 5 MB or smaller");
+        return imageUploadService.saveImage(image);
+    }
+
 }

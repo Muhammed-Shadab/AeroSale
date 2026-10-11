@@ -35,7 +35,8 @@ public class Product {
     @Column(nullable = false)
     private BigDecimal price;
 
-
+    @Column(length = 500)
+    private String imageUrl;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt;

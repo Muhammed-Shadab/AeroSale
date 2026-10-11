@@ -9,13 +9,13 @@ import java.util.UUID;
 
 public interface ProductService {
 
-    ProductResponse createProduct(UUID sellerId , ProductRequest request);
+    ProductResponse createProduct(UUID sellerId , ProductRequest request , String imageUrl);
 
     ProductResponse getProductByIdAndSellerId(UUID productId, UUID sellerId);
 
     Page<ProductResponse> getAllProductsBySellerId(UUID sellerId, Pageable pageable);
 
-    ProductResponse updateProduct(UUID productId , UUID sellerId , ProductRequest request);
+    ProductResponse updateProduct(UUID productId , UUID sellerId , ProductRequest request , String imageUrl);
 
     void deleteProduct(UUID productId ,  UUID sellerId);
 

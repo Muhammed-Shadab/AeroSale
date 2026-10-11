@@ -23,12 +23,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public ProductResponse createProduct(UUID sellerId, ProductRequest request) {
+    public ProductResponse createProduct(UUID sellerId, ProductRequest request , String imageUrl) {
         Product product = Product.builder()
                 .sellerId(sellerId)
                 .name(request.name())
                 .description((request.description()))
                 .price(request.price())
+                .imageUrl(imageUrl)
                 .status(request.status())
                 .build();
         Product savedProduct = productRepository.save(product);
@@ -54,13 +55,15 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public ProductResponse updateProduct(UUID productId, UUID sellerId, ProductRequest request) {
+    public ProductResponse updateProduct(UUID productId, UUID sellerId, ProductRequest request , String imageUrl) {
         Product product = fetchProduct(productId, sellerId);
 
         product.setName(request.name());
         product.setDescription(request.description());
         product.setPrice(request.price());
         product.setStatus(request.status());
+
+        if (imageUrl != null) product.setImageUrl(imageUrl); // agar new img ayegi toh hi updte wnra no update
 
         Product updatedProduct = productRepository.save(product);
         return ProductResponse.fromEntity(updatedProduct);
