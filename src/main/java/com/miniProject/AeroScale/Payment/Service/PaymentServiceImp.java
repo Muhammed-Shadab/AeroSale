@@ -10,120 +10,125 @@ import com.miniProject.AeroScale.order.repository.OrderRepository;
 import com.miniProject.AeroScale.order.service.OrderService;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
-
 import com.razorpay.RazorpayException;
-import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 import java.util.UUID;
 
-
-@RequiredArgsConstructor
 @Service
-public class PaymentServiceImp implements PaymentService{
+public class PaymentServiceImp implements PaymentService {
 
     @Value("${razorpay-key}")
     private String key;
 
     @Value("${razorpay-secret-key}")
     private String secretKey;
-    private TransactionsRepository transactionsRepository;
-    private OrderService orderService;
-    private OrderRepository orderRepository;
+
+    private final TransactionsRepository transactionsRepository;
+    private final OrderRepository orderRepository;
+    private final OrderService orderService;
+
+    public PaymentServiceImp(TransactionsRepository transactionsRepository,
+                             OrderRepository orderRepository,
+                             @Lazy OrderService orderService) {
+        this.transactionsRepository = transactionsRepository;
+        this.orderRepository = orderRepository;
+        this.orderService = orderService;
+    }
 
     @Override
     public RazorPayOrderResponse createRazorPayOrder(Orders savedOrder) throws RazorpayException {
         RazorpayClient razorpay = new RazorpayClient(key, secretKey);
 
+        // rupees -> paise
         int amount = savedOrder.getTotalAmount()
                 .setScale(2, RoundingMode.HALF_UP)
-                .multiply(new BigDecimal(100))
+                .movePointRight(2)
                 .intValueExact();
 
         JSONObject orderRequest = new JSONObject();
         orderRequest.put("amount", amount);
-        orderRequest.put("currency","INR");
+        orderRequest.put("currency", "INR");
         orderRequest.put("receipt", "AeroScale_" + savedOrder.getId());
         JSONObject notes = new JSONObject();
-        notes.put("note1","AeroScale");
-        orderRequest.put("notes",notes);
+        notes.put("note1", "AeroScale");
+        orderRequest.put("notes", notes);
 
         Order order = razorpay.orders.create(orderRequest);
+        String rzpOrderId = order.get("id");
 
         Transactions transactions = Transactions.builder()
                 .orderId(savedOrder.getId())
-                .RazorPayOrderId(order.get("id"))
+                .razorpayOrderId(rzpOrderId)
                 .amount(savedOrder.getTotalAmount())
                 .status(Transactions.Status.PENDING)
                 .build();
-
         transactionsRepository.save(transactions);
 
-        RazorPayOrderResponse response = new RazorPayOrderResponse(key, amount, order.get("id"));
-        return response;
+        return new RazorPayOrderResponse(key, amount, rzpOrderId);
     }
 
     @Override
-    public String getRazorPayOrderId(UUID id) {
-        return transactionsRepository.findByOrderId(id).
-                orElseThrow(() -> new RazorPayOrderIdNotFound("RazorPay Order Id not found"));
+    @Transactional(readOnly = true)
+    public String getRazorPayOrderId(UUID orderId) {
+        return transactionsRepository.findByOrderId(orderId)
+                .map(Transactions::getRazorpayOrderId)
+                .orElseThrow(() -> new RazorPayOrderIdNotFound("RazorPay Order Id not found"));
     }
 
     @Override
     @Transactional
-    public void updatePaymentStatus(PaymentStatus payload, UUID id) throws Exception {
-        Transactions transactions = transactionsRepository.findTransactionByOrderId(UUID.fromString(payload.getRzpOrderId()))
+    public void updatePaymentStatus(PaymentStatus payload, UUID buyerId) throws Exception {
+        Transactions tx = transactionsRepository.findByRazorpayOrderId(payload.getRzpOrderId())
                 .orElseThrow(() -> new RazorPayOrderIdNotFound("RazorPay Order Id not found"));
 
-        Optional<Orders> order = orderRepository.findByIdAndBuyerId(transactions.getOrderId(), id);
-        if(order.isEmpty() || payload.getPaymentId() == null || payload.getSignature() == null
-                || !(verifySignature(payload.getRzpOrderId(), payload.getPaymentId(), payload.getSignature()))) {
-            transactions.setStatus(Transactions.Status.FAILED);
-        }else {
-            transactions.setStatus(Transactions.Status.COMPLETED);
-            transactions.setPaymentId(payload.getPaymentId());
-            transactions.setSignature(payload.getSignature());
+        // order isi buyer ka hona chahiye
+        orderRepository.findByIdAndBuyerId(tx.getOrderId(), buyerId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
-            orderService.confirmOrderPayment(UUID.fromString(payload.getRzpOrderId()));
+        // double submit: pehle hi COMPLETED hai to dobara kuch nahi karna
+        if (tx.getStatus() == Transactions.Status.COMPLETED) return;
+
+        if (payload.getPaymentId() == null || payload.getSignature() == null
+                || !verifySignature(payload.getRzpOrderId(), payload.getPaymentId(), payload.getSignature())) {
+            // exception se transaction rollback hota hai, aur wahi chahiye: galat signature se
+            // asli transaction ko FAILED mark nahi karna, buyer sahi payment se dobara try kar sake
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment verification failed");
         }
+
+        tx.setStatus(Transactions.Status.COMPLETED);
+        tx.setPaymentId(payload.getPaymentId());
+        tx.setSignature(payload.getSignature());
+
+        // order CONFIRMED + stock confirm. Ye fail hua to upar ka COMPLETED bhi rollback ho jata hai
+        orderService.confirmOrderPayment(tx.getOrderId());
     }
 
-
-
-    public boolean verifySignature(
-            String razorpayOrderId,
-            String razorpayPaymentId,
-            String razorpaySignature
-    ) throws Exception {
-
-        String payload = razorpayOrderId + "|" + razorpayPaymentId;
+    private boolean verifySignature(String razorpayOrderId, String razorpayPaymentId,
+                                    String razorpaySignature) throws Exception {
+        String data = razorpayOrderId + "|" + razorpayPaymentId;
 
         Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+        byte[] hash = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
 
-        SecretKeySpec secretKeySpec = new SecretKeySpec(
-                secretKey.getBytes(StandardCharsets.UTF_8),
-                "HmacSHA256"
-        );
+        // Razorpay signature hex hoti hai (Base64 nahi)
+        String generated = HexFormat.of().formatHex(hash);
 
-        mac.init(secretKeySpec);
-
-        byte[] hash = mac.doFinal(
-                payload.getBytes(StandardCharsets.UTF_8)
-        );
-
-        String generatedSignature =
-                java.util.Base64.getEncoder().encodeToString(hash);
-
-        return generatedSignature.equals(razorpaySignature);
+        return MessageDigest.isEqual(
+                generated.getBytes(StandardCharsets.UTF_8),
+                razorpaySignature.getBytes(StandardCharsets.UTF_8));
     }
-
 }

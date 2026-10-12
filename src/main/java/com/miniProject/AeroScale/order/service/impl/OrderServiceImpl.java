@@ -48,7 +48,7 @@ public class OrderServiceImpl implements OrderService {
     private final PaymentService paymentService;
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public OrderResponse createOrder(UUID buyerId, CheckoutRequest request) throws RazorpayException {
 
         // 1. IDEMPOTENCY GUARD: Check if this checkout attempt already succeeded

@@ -1,5 +1,7 @@
 package com.miniProject.AeroScale.order.exception;
 
+import com.razorpay.RazorpayException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -7,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
-
+@Slf4j
 @RestControllerAdvice(basePackages = "com.miniProject.AeroScale.order.controller")
 public class OrderExceptionHandler {
 
@@ -61,6 +63,17 @@ public class OrderExceptionHandler {
     public ProblemDetail handleIllegalArgumentException(IllegalArgumentException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
         problem.setTitle("Invalid Request");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    // Razorpay down ya keys galat
+    @ExceptionHandler(RazorpayException.class)
+    public ProblemDetail handleRazorpay(RazorpayException ex) {
+        log.error("Razorpay call failed", ex);
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY,
+                "Payment gateway is unavailable, please try again");
+        problem.setTitle("Payment Gateway Error");
         problem.setProperty("timestamp", Instant.now());
         return problem;
     }

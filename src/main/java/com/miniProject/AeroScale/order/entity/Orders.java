@@ -2,7 +2,7 @@ package com.miniProject.AeroScale.order.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.UuidGenerator;
+import org.springframework.data.domain.Persistable;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -17,12 +17,30 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "orders")
-public class Orders {
+public class Orders implements Persistable<UUID> {
 
     @Id
-    @UuidGenerator
     @Column(updatable = false)
     private UUID id;
+
+    // ===== START: CHANGE FOR PRE-ASSIGNED ID (Persistable implementation) =====
+    // Spring Data JPA ko batane ke liye ki pre-generated UUID hone par bhi ye new entity hai
+    // Taaki save() call hone par Hibernate persist() kare aur conflict na aaye
+    @Transient
+    @Builder.Default
+    private boolean isNew = true;
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    @PostPersist
+    @PostLoad
+    void markNotNew() {
+        this.isNew = false;
+    }
+    // ===== END: CHANGE FOR PRE-ASSIGNED ID =====
 
     @Column(nullable = false, updatable = false)
     private UUID buyerId;

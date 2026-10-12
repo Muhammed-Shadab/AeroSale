@@ -90,6 +90,7 @@ public class RefreshTokenService {
         return refreshToken.getUsers();
     }
 
+    @Transactional
     public void revoke(String token) {
         String hash = sha256Hex(token);
         refreshTokenRespository.revokeIfExistByToken(hash);

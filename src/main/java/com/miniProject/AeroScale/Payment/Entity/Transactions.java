@@ -22,18 +22,17 @@ public class Transactions {
     @UuidGenerator
     private UUID id;
 
-
-    @Column(updatable = false)
+    @Column(nullable = false, updatable = false)
     private UUID orderId;
 
+    // order id yha strin hai...apan phle uuid dale the uaaha
     @NotNull
     @Column(unique = true, updatable = false)
-    private UUID RazorPayOrderId;
+    private String razorpayOrderId;
 
     @NotNull
     @Column(updatable = false)
     private BigDecimal amount;
-
 
     private String paymentMethod;
 
@@ -45,7 +44,7 @@ public class Transactions {
     @NotNull
     private Status status;
 
-    public enum Status{
+    public enum Status {
         PENDING,
         FAILED,
         COMPLETED

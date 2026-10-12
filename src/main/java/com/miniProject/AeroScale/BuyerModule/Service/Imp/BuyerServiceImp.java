@@ -11,11 +11,8 @@ import com.miniProject.AeroScale.BuyerModule.Repository.BuyerAddressRepository;
 import com.miniProject.AeroScale.BuyerModule.Repository.BuyerRepository;
 import com.miniProject.AeroScale.BuyerModule.Service.BuyerService;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
-import com.miniProject.AeroScale.AuthModule.Security.JwtAuthenticationFilter.AuthenticatedObject;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -144,20 +141,20 @@ public class BuyerServiceImp implements BuyerService {
 
     private AddAddressResponse BuyerAddressToAddAddressResponseConverter(BuyerAddress buyerAddress) {
         return AddAddressResponse.builder()
+                .id(buyerAddress.getId())
+                .label(buyerAddress.getAddressLabel())
                 .addressLine1(buyerAddress.getAddressLine1())
                 .addressLine2(buyerAddress.getAddressLine2())
                 .city(buyerAddress.getCity())
                 .state(buyerAddress.getState())
                 .country(buyerAddress.getCountry())
                 .pincode(buyerAddress.getPincode())
-                .id(buyerAddress.getId())
                 .createdAt(buyerAddress.getCreatedAt())
                 .updatedAt(buyerAddress.getUpdatedAt())
                 .isDefault(buyerAddress.isDefault())
                 .recipientName(buyerAddress.getRecipientName())
                 .recipientPhoneNo(buyerAddress.getRecipientPhoneNo())
                 .build();
-
     }
 
     private Buyer findBuyerOrThrow(UUID id) {
