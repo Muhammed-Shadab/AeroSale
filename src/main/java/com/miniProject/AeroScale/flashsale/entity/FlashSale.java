@@ -1,12 +1,10 @@
 package com.miniProject.AeroScale.flashsale.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -21,10 +19,10 @@ public class FlashSale {
 
     @Id
     @UuidGenerator
-    @Column(nullable = false ,updatable = false)
+    @Column(nullable = false, updatable = false)
     private UUID id;
 
-    @Column(nullable = false ,updatable = false)
+    @Column(nullable = false, updatable = false)
     private UUID productId;
 
     @Column(nullable = false)
@@ -37,13 +35,25 @@ public class FlashSale {
     @Builder.Default
     private Integer maxItemsPerUser = 4;
 
+    // sale ke dauran buyer jo price dega
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal salePrice;
+
+    // is sale ke liye alag rakhi gayi units
+    @Column(nullable = false)
+    private Integer totalQuantity;
+
+    // confirm hui (paid) units. "82% claimed" bar isi se chalta hai
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer soldQuantity = 0;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
     private FlashSaleStatus status = FlashSaleStatus.SCHEDULED;
 
     public enum FlashSaleStatus {
-        SCHEDULED , ACTIVE , ENDED , CANCELLED
+        SCHEDULED, ACTIVE, ENDED, CANCELLED
     }
-
-
-
-
 }
