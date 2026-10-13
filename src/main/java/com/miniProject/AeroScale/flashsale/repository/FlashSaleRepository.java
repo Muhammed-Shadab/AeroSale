@@ -32,6 +32,13 @@ public interface FlashSaleRepository extends JpaRepository<FlashSale, UUID> {
 
     Page<FlashSale> findByStatusAndStartTimeGreaterThan(FlashSaleStatus status, Instant now, Pageable pageable);
 
+    // paid units badhao: sirf us product ki ACTIVE sale par, ek atomic UPDATE mein
+    @Modifying
+    @Query("update FlashSale f set f.soldQuantity = f.soldQuantity + :qty "
+            + "where f.productId = :productId and f.status = :status")
+    int addSold(@Param("productId") UUID productId, @Param("qty") int qty,
+                @Param("status") FlashSaleStatus status);
+
     // scheduler: ek hi UPDATE mein sab sales ka status badalta hai
     @Modifying(clearAutomatically = true)
     @Query("update FlashSale f set f.status = :to where f.status in :from and f.endTime <= :now")
@@ -41,6 +48,7 @@ public interface FlashSaleRepository extends JpaRepository<FlashSale, UUID> {
 
     @Modifying(clearAutomatically = true)
     @Query("update FlashSale f set f.status = :to where f.status = :from and f.startTime <= :now and f.endTime > :now")
+
     int markActive(@Param("to") FlashSaleStatus to,
                    @Param("from") FlashSaleStatus from,
                    @Param("now") Instant now);

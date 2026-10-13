@@ -24,6 +24,9 @@ public class CartResponse {
     private Instant createdAt;
     private Instant updatedAt;
     private String imageUrl;
+    private BigDecimal originalPrice;   // regular price, sirf jab sale LIVE ho, warna null
+    private Integer maxItemsPerUser;    // sale ki limit, LIVE ho tab, warna null
+    private Instant saleEndsAt;         // sale ka endTime, LIVE ho tab, warna null
 
 
 

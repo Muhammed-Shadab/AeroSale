@@ -30,4 +30,7 @@ public interface FlashSaleService {
 
     // GET /catalog/flash-sales ke liye: LIVE ya UPCOMING sales ka ek page
     Page<FlashSale> findSalesPage(SaleState state, Pageable pageable);
+
+    // payment confirm hone par: us product ki ACTIVE sale ka soldQuantity += quantity
+    void recordSale(UUID productId, int quantity);
 }

@@ -57,6 +57,13 @@ public class FlashSaleServiceImpl implements FlashSaleService {
             throw new IllegalArgumentException("You can only purchase a maximum of "
                     + sale.getMaxItemsPerUser() + " units during this flash sale.");
         }
+
+        int remaining = sale.getTotalQuantity() - sale.getSoldQuantity();
+        if (requestedQuantity > remaining) {
+            throw new IllegalStateException(remaining <= 0
+                    ? "This flash sale is sold out."
+                    : "Only " + remaining + " units are left in this flash sale.");
+        }
     }
 
     @Override
@@ -128,6 +135,12 @@ public class FlashSaleServiceImpl implements FlashSaleService {
         // SCHEDULED aur start > now
         return flashSaleRepository.findByStatusAndStartTimeGreaterThan(
                 FlashSaleStatus.SCHEDULED, now, pageable);
+    }
+
+    @Override
+    @Transactional
+    public void recordSale(UUID productId, int quantity) {
+        flashSaleRepository.addSold(productId, quantity, FlashSaleStatus.ACTIVE);
     }
 
     @Override

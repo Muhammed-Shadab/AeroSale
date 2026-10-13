@@ -6,6 +6,7 @@ import com.miniProject.AeroScale.BuyerModule.Service.BuyerService;
 import com.miniProject.AeroScale.BuyerModule.Service.CartService;
 import com.miniProject.AeroScale.Payment.DTO.Response.RazorPayOrderResponse;
 import com.miniProject.AeroScale.Payment.Service.PaymentService;
+import com.miniProject.AeroScale.flashsale.entity.FlashSale;
 import com.miniProject.AeroScale.flashsale.service.FlashSaleService;
 import com.miniProject.AeroScale.inventory.service.InventoryService;
 import com.miniProject.AeroScale.order.dto.request.CheckoutRequest;
@@ -97,16 +98,21 @@ public class OrderServiceImpl implements OrderService {
 
             flashSaleService.validateFlashSalePurchase(cartItem.getProductId(), cartItem.getItemCount());
 
+            // price backend decide karta hai: sale LIVE ho to salePrice, warna regular price
+            BigDecimal unitPrice = flashSaleService.findLiveSale(cartItem.getProductId())
+                    .map(FlashSale::getSalePrice)
+                    .orElse(productResponse.price());
+
             // Lock the stock in the Vault (Throws exception if unavailable)
             inventoryService.reserveStock(cartItem.getProductId(), orderId, cartItem.getItemCount());
 
-            BigDecimal subTotal = productResponse.price().multiply(BigDecimal.valueOf(cartItem.getItemCount()));
+            BigDecimal subTotal = unitPrice.multiply(BigDecimal.valueOf(cartItem.getItemCount()));
             calculatedTotal = calculatedTotal.add(subTotal);
 
             OrderItem orderItem = OrderItem.builder()
                     .productId(productResponse.id())
                     .quantity(cartItem.getItemCount())
-                    .unitPriceAtPurchase(productResponse.price())
+                    .unitPriceAtPurchase(unitPrice)
                     .subTotal(subTotal)
                     .build();
 
@@ -157,6 +163,9 @@ public class OrderServiceImpl implements OrderService {
         // Tell the Vault to permanently deduct the physical stock
         for (OrderItem item : order.getOrderItems()) {
             inventoryService.confirmStock(orderId, item.getProductId());
+            // sale ACTIVE hai to "claimed" bar badhao
+            flashSaleService.recordSale(item.getProductId(), item.getQuantity());
+
         }
 
         order.setStatus(Orders.OrderStatus.CONFIRMED);

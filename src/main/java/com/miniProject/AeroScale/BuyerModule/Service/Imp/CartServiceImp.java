@@ -1,8 +1,8 @@
 package com.miniProject.AeroScale.BuyerModule.Service.Imp;
 
 import com.miniProject.AeroScale.BuyerModule.DTO.Request.ItemDataForCart;
-import com.miniProject.AeroScale.BuyerModule.DTO.Response.CartResponse;
 import com.miniProject.AeroScale.BuyerModule.DTO.Request.UpdateCartItemRequest;
+import com.miniProject.AeroScale.BuyerModule.DTO.Response.CartResponse;
 import com.miniProject.AeroScale.BuyerModule.Entity.Buyer;
 import com.miniProject.AeroScale.BuyerModule.Entity.CartItem;
 import com.miniProject.AeroScale.BuyerModule.Exception.CartItemNotFoundException;
@@ -11,7 +11,8 @@ import com.miniProject.AeroScale.BuyerModule.Exception.RequiredThingsNotFoundExc
 import com.miniProject.AeroScale.BuyerModule.Repository.BuyerRepository;
 import com.miniProject.AeroScale.BuyerModule.Repository.CartRespository;
 import com.miniProject.AeroScale.BuyerModule.Service.CartService;
-import com.miniProject.AeroScale.inventory.entity.Inventory;
+import com.miniProject.AeroScale.flashsale.entity.FlashSale;
+import com.miniProject.AeroScale.flashsale.service.FlashSaleService;
 import com.miniProject.AeroScale.inventory.service.InventoryService;
 import com.miniProject.AeroScale.product.entity.Product;
 import com.miniProject.AeroScale.product.repository.ProductRepository;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -31,6 +33,7 @@ public class CartServiceImp implements CartService {
     private final BuyerRepository buyerRepository;
     private final ProductRepository productRepository;
     private final InventoryService inventoryService;
+    private final FlashSaleService flashSaleService;
 
 
     @Override
@@ -107,12 +110,20 @@ public class CartServiceImp implements CartService {
     private CartResponse cartItemToCartResponseConverter(CartItem item) {
         if(item == null) return null;
         Product product =  item.getProduct();
+
+        // sale LIVE ho to buyer wahi price dega jo seller ne sale ke liye set kiya
+        Optional<FlashSale> sale = flashSaleService.findLiveSale(product.getId());
+
         return CartResponse.builder()
                 .id(item.getId())
                 .productId(product.getId())
                 .itemCount(item.getItemCount())
                 .itemName(product.getName())
-                .pricePerItem(product.getPrice())
+                .pricePerItem(sale.map(FlashSale::getSalePrice).orElse(product.getPrice()))
+                .originalPrice(sale.isPresent() ? product.getPrice() : null)
+                .maxItemsPerUser(sale.map(FlashSale::getMaxItemsPerUser).orElse(null))
+                .saleEndsAt(sale.map(FlashSale::getEndTime).orElse(null))
+                .imageUrl(product.getImageUrl())
                 .CurrentStockOfProduct(inventoryService.getStock(product.getId()))
                 .createdAt(item.getCreatedAt())
                 .updatedAt(item.getUpdatedAt())
