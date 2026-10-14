@@ -21,4 +21,9 @@ public interface ProductService {
 
     // Internal cross-module method for Order module
     ProductResponse getProductForCheckout(UUID productId);
+
+    String getProductNameByProductId(UUID productId);
+
+    String getProductImageByProductId(UUID productId);
+
 }

@@ -11,15 +11,19 @@ import com.miniProject.AeroScale.flashsale.service.FlashSaleService;
 import com.miniProject.AeroScale.inventory.service.InventoryService;
 import com.miniProject.AeroScale.order.dto.request.CheckoutRequest;
 
+import com.miniProject.AeroScale.order.dto.response.OrderItemResponse;
 import com.miniProject.AeroScale.order.dto.response.OrderResponse;
+import com.miniProject.AeroScale.order.dto.response.OrdersResponseOfBuyer;
 import com.miniProject.AeroScale.order.entity.OrderAddress;
 import com.miniProject.AeroScale.order.entity.OrderItem;
 import com.miniProject.AeroScale.order.entity.Orders;
 import com.miniProject.AeroScale.order.exception.EmptyCartException;
+import com.miniProject.AeroScale.order.repository.OrderItemRepository;
 import com.miniProject.AeroScale.order.repository.OrderRepository;
 import com.miniProject.AeroScale.order.service.OrderService;
 import com.miniProject.AeroScale.product.dto.response.ProductResponse;
 import com.miniProject.AeroScale.product.service.ProductService;
+import com.razorpay.Order;
 import com.razorpay.RazorpayException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,6 +45,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final FlashSaleService flashSaleService;
+    private final OrderItemRepository orderItemRepository;
 
     // Strict Microservice Contracts
     private final CartService cartService;
@@ -55,7 +61,7 @@ public class OrderServiceImpl implements OrderService {
         // 1. IDEMPOTENCY GUARD: Check if this checkout attempt already succeeded
         Optional<Orders> existingOrder = orderRepository.findByIdempotencyKey(request.idempotencyKey());
         if (existingOrder.isPresent()) {
-            return OrderResponse.fromEntity(existingOrder.get(), paymentService.getRazorPayOrderId(existingOrder.get().getId()), key);
+            return OrderResponse.fromEntity(existingOrder.get(), paymentService.getRazorPayOrderId(existingOrder.get().getId()), key, null);
         }
 
         // 2. Fetch Cart
@@ -126,7 +132,7 @@ public class OrderServiceImpl implements OrderService {
         cartService.clearCart(buyerId);
 
         RazorPayOrderResponse orderResponse = paymentService.createRazorPayOrder(savedOrder);
-        return OrderResponse.fromEntity(savedOrder, orderResponse.getOrderId(), key);
+        return OrderResponse.fromEntity(savedOrder, orderResponse.getOrderId(), key, null);
     }
 
     @Override
@@ -170,5 +176,38 @@ public class OrderServiceImpl implements OrderService {
 
         order.setStatus(Orders.OrderStatus.CONFIRMED);
         orderRepository.save(order);
+    }
+
+    @Override
+    public OrdersResponseOfBuyer getOrderOfBuyer(UUID id, long page, int size) {
+        if(id == null) throw new IllegalArgumentException("login first");
+
+        List<Orders> orderList = orderRepository.findAllByBuyerId(id);
+
+
+        OrdersResponseOfBuyer response = new OrdersResponseOfBuyer();
+        response.setLast(true);
+        response.setTotalElements(orderList.size());
+        response.setTotalPages(1);
+        response.setNumber(1);
+        response.setSize(orderList.size());
+
+        if(orderList.size() > 0) {
+            List<OrderResponse> contentList = new ArrayList<>();
+            for(Orders order: orderList) {
+                List<OrderItemResponse> orderItemResponses = new ArrayList<>();
+                for(OrderItem orderItem: order.getOrderItems()) {
+                    orderItemResponses.add(OrderItemResponse.fromEntity(orderItem,
+                            productService.getProductNameByProductId(orderItem.getProductId()),
+                            productService.getProductImageByProductId(orderItem.getProductId())));
+                }
+                contentList.add(OrderResponse.fromEntity(order, paymentService.getRazorPayOrderId(order.getId()), key, null, orderItemResponses));
+            }
+
+            response.setContent(contentList);
+        }
+
+        return response;
+
     }
 }

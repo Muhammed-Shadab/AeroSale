@@ -46,6 +46,11 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @GetMapping("/test")
+    public String test() {
+        return "working";
+    }
+
     @GetMapping("/{productId}")
     public ResponseEntity<ProductResponse> getProduct(
             @AuthenticationPrincipal(expression = "id") UUID sellerId,
@@ -114,6 +119,10 @@ public class ProductController {
         if (image.getSize() > MAX_IMAGE_BYTES)
             throw new IllegalArgumentException("Image must be 5 MB or smaller");
         return imageUploadService.saveImage(image);
+    }
+
+    public String getProductNameByProductId(UUID productId) {
+        return productService.getProductNameByProductId(productId);
     }
 
 }

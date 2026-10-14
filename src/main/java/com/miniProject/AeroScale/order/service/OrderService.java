@@ -2,6 +2,7 @@ package com.miniProject.AeroScale.order.service;
 
 import com.miniProject.AeroScale.order.dto.request.CheckoutRequest;
 import com.miniProject.AeroScale.order.dto.response.OrderResponse;
+import com.miniProject.AeroScale.order.dto.response.OrdersResponseOfBuyer;
 import com.razorpay.RazorpayException;
 
 import java.util.UUID;
@@ -14,4 +15,6 @@ public interface OrderService {
 
     // Simulates a successful payment webhook : we do not have a payment service right now, for now we just simulate.
     void confirmOrderPayment(UUID orderId);
+
+    OrdersResponseOfBuyer getOrderOfBuyer(UUID id, long page, int size);
 }

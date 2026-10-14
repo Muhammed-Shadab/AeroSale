@@ -93,6 +93,18 @@ public class ProductServiceImpl implements ProductService {
         return ProductResponse.fromEntity(product);
     }
 
+    @Override
+    public String getProductNameByProductId(UUID productId) {
+        Product product =  productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("product Not found"));
+        return product.getName();
+    }
+
+    @Override
+    public String getProductImageByProductId(UUID productId) {
+        Product product =  productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("product Not found"));
+        return product.getImageUrl();
+    }
+
     // Helper method to enforce data isolation (DRY Principle)
     private Product fetchProduct(UUID productId, UUID sellerId) {
         return productRepository.findByIdAndSellerId(productId, sellerId)

@@ -2,6 +2,7 @@ package com.miniProject.AeroScale.order.controller;
 
 import com.miniProject.AeroScale.order.dto.request.CheckoutRequest;
 import com.miniProject.AeroScale.order.dto.response.OrderResponse;
+import com.miniProject.AeroScale.order.dto.response.OrdersResponseOfBuyer;
 import com.miniProject.AeroScale.order.service.OrderService;
 import com.razorpay.RazorpayException;
 import jakarta.validation.Valid;
@@ -45,5 +46,13 @@ public class OrderController {
     public ResponseEntity<Void> simulatePayment(@PathVariable UUID orderId) {
         orderService.confirmOrderPayment(orderId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<OrdersResponseOfBuyer> getOrdersOfBuyer(
+                              @AuthenticationPrincipal(expression = "id") UUID id
+                            , @RequestParam(defaultValue = "0") long page
+                            , @RequestParam(defaultValue = "8") int size ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.getOrderOfBuyer(id, page, size));
     }
 }
