@@ -19,6 +19,8 @@ public interface FlashSaleService {
     // seller naya flash sale banata hai
     FlashSale scheduleFlashSale(UUID sellerId, ScheduleFlashSaleRequest request);
 
+    void cancelFlashSale(UUID sellerId, UUID flashSaleId); // cancelation keliye
+
     // abhi LIVE sale (ACTIVE aur start <= now < end). Cart aur checkout price ke liye
     Optional<FlashSale> findLiveSale(UUID productId);
 

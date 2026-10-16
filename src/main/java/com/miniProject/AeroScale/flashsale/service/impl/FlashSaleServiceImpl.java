@@ -4,10 +4,12 @@ import com.miniProject.AeroScale.flashsale.dto.request.SaleState;
 import com.miniProject.AeroScale.flashsale.dto.request.ScheduleFlashSaleRequest;
 import com.miniProject.AeroScale.flashsale.entity.FlashSale;
 import com.miniProject.AeroScale.flashsale.entity.FlashSale.FlashSaleStatus;
+import com.miniProject.AeroScale.flashsale.exception.FlashSaleNotFoundException;
 import com.miniProject.AeroScale.flashsale.repository.FlashSaleRepository;
 import com.miniProject.AeroScale.flashsale.service.FlashSaleService;
 import com.miniProject.AeroScale.inventory.service.InventoryService;
 import com.miniProject.AeroScale.product.dto.response.ProductResponse;
+import com.miniProject.AeroScale.product.exception.ProductNotFoundException;
 import com.miniProject.AeroScale.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -101,6 +103,44 @@ public class FlashSaleServiceImpl implements FlashSaleService {
                 .build();
 
         return flashSaleRepository.save(flashSale);
+    }
+
+    @Override
+    @Transactional
+    public void cancelFlashSale(UUID sellerId, UUID flashSaleId) {
+
+        // slae find...A nonexistent ID returns 404.
+        FlashSale sale = flashSaleRepository.findById(flashSaleId)
+                .orElseThrow(() ->
+                        new FlashSaleNotFoundException(
+                                "Flash sale not found"
+                        )
+                );
+        //Verify that the authenticated seller owns the product.This method throws ProductNotFoundException if the product doesnt belong or not there
+        try {
+            productService.getProductByIdAndSellerId(
+                    sale.getProductId(),
+                    sellerId
+            );
+        } catch (ProductNotFoundException ex) {
+            throw new FlashSaleNotFoundException(
+                    "Flash sale not found"
+            );
+        }
+
+        //Atomically cancel only if the sale is still scheduled and its start time is strictly in the future.
+        int updated = flashSaleRepository.cancelIfScheduledAndNotStarted(
+                flashSaleId,
+                FlashSaleStatus.SCHEDULED,
+                FlashSaleStatus.CANCELLED,
+                Instant.now()
+        );
+        // 4. If no row was updated, cancellation is not permitted.
+        if (updated == 0) {
+            throw new IllegalStateException(
+                    "Only a scheduled flash sale that has not started can be cancelled."
+            );
+        }
     }
 
     @Override

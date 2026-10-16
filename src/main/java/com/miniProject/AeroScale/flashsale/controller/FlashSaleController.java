@@ -8,10 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -30,5 +27,15 @@ public class FlashSaleController {
 
         flashSaleService.scheduleFlashSale(sellerId, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> cancelSale(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal(expression = "id") UUID sellerId) {
+
+        flashSaleService.cancelFlashSale(sellerId, id);
+
+        return ResponseEntity.noContent().build();
     }
 }

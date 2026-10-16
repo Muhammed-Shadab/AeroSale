@@ -45,6 +45,17 @@ public class FlashSaleExceptionHandler {
         return problem(HttpStatus.BAD_REQUEST, "Invalid Parameter", "Invalid value for parameter: " + ex.getName());
     }
 
+    @ExceptionHandler(FlashSaleNotFoundException.class)
+    public ProblemDetail handleFlashSaleNotFound(
+            FlashSaleNotFoundException ex) {
+
+        return problem(
+                HttpStatus.NOT_FOUND,
+                "Flash Sale Not Found",
+                "Flash sale not found"
+        );
+    }
+
     private ProblemDetail problem(HttpStatus status, String title, String detail) {
         ProblemDetail p = ProblemDetail.forStatusAndDetail(status, detail);
         p.setTitle(title);
