@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class RegisterResponse {
 
-    private UUID UUID;
+    private UUID id;
     private String email;
     private Role role;
 

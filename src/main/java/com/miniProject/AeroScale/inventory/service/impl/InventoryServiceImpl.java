@@ -77,8 +77,9 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     @Transactional
     public void releaseStock(UUID orderId, UUID productId) {
+        System.out.println("cancel9");
         InventoryReservation reservation = getPendingReservationOrThrow(orderId, productId);
-
+        System.out.println("cancel6");
         Inventory inventory = inventoryRepository.findByProductId(productId)
                 .orElseThrow(() -> new IllegalStateException("Inventory record not found"));
 
@@ -163,5 +164,8 @@ public class InventoryServiceImpl implements InventoryService {
         return inventory.getAvailableStock();
     }
 
+    public String test() {
+        return "working";
+    }
 
 }

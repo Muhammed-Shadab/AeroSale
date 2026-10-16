@@ -44,4 +44,6 @@ public interface InventoryService {
     void addStock(UUID productId, int additionalQuantity);
 
     int getStock(UUID productId);
+
+    String test();
 }

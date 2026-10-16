@@ -38,6 +38,11 @@ public class Seller {
     @Column(nullable = false)
     private Instant DateOfBirth;
 
+
+    @Builder.Default
+    @Column(nullable = false)
+    BigDecimal totalRevenew = BigDecimal.valueOf(0);
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     @Column(nullable = false)

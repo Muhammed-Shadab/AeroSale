@@ -146,13 +146,19 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalStateException("Only PENDING orders can be cancelled");
         }
 
+
         // Loop through the items and tell the vault to release the locks
+
         for (OrderItem item : order.getOrderItems()) {
+            System.out.println(item.getProductId());
             inventoryService.releaseStock(orderId, item.getProductId());
         }
 
+
         // Mark as cancelled and save
         order.setStatus(Orders.OrderStatus.CANCELLED);
+        System.out.println("cancel4");
+
         orderRepository.save(order);
     }
 

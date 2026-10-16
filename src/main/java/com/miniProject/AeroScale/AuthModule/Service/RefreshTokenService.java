@@ -73,20 +73,23 @@ public class RefreshTokenService {
     @Transactional
     public Users validateRefreshToken(String token) {
         String hash = sha256Hex(token);
-
         RefreshToken refreshToken = refreshTokenRespository.findByToken(hash)
                 .orElseThrow(() -> new RefreshTokenException("Refresh token not found!"));
+
 
 
         if(refreshToken.isExpired()) {
             throw new RefreshTokenException("Unable to create the Access token because Refesh token is Expired");
         }
 
+
         if(!refreshToken.isUsable()) {
             throw new RefreshTokenException("Refresh Token is Already Revoked!!");
         }
 
         refreshTokenRespository.revokeById(refreshToken.getId());
+
+
         return refreshToken.getUsers();
     }
 
@@ -95,4 +98,9 @@ public class RefreshTokenService {
         String hash = sha256Hex(token);
         refreshTokenRespository.revokeIfExistByToken(hash);
     }
+
+    public String temp() {
+        return "working";
+    }
+
 }

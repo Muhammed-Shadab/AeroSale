@@ -151,7 +151,7 @@ public class AuthServiceImp implements AuthService{
 
 
        return RegisterResponse.builder()
-                .UUID(user.getId())
+                .id(user.getId())
                 .email(user.getEmail())
                 .role(user.getRole())
                 .accessToken(accessToken)
