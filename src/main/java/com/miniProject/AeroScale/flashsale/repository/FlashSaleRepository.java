@@ -2,6 +2,7 @@ package com.miniProject.AeroScale.flashsale.repository;
 
 import com.miniProject.AeroScale.flashsale.entity.FlashSale;
 import com.miniProject.AeroScale.flashsale.entity.FlashSale.FlashSaleStatus;
+import com.miniProject.AeroScale.product.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -52,4 +53,7 @@ public interface FlashSaleRepository extends JpaRepository<FlashSale, UUID> {
     int markActive(@Param("to") FlashSaleStatus to,
                    @Param("from") FlashSaleStatus from,
                    @Param("now") Instant now);
+
+    @Query("select f from FlashSale f WHERE f.productId = :product and f.status = 'ACTIVE'")
+    Optional<FlashSale> IsThisProductIsActive(@Param("product") Product product);
 }

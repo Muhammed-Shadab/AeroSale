@@ -164,7 +164,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public void confirmOrderPayment(UUID orderId) {
+    public void confirmOrderPayment(UUID orderId, UUID buyerId) {
         Orders order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 

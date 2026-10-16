@@ -1,21 +1,31 @@
 package com.miniProject.AeroScale.inventory.service.impl;
 
+import com.miniProject.AeroScale.SellerModule.Entity.Seller;
+import com.miniProject.AeroScale.SellerModule.Service.SellerService;
+import com.miniProject.AeroScale.flashsale.entity.FlashSale;
+import com.miniProject.AeroScale.flashsale.repository.FlashSaleRepository;
+import com.miniProject.AeroScale.flashsale.service.FlashSaleService;
 import com.miniProject.AeroScale.inventory.entity.Inventory;
 import com.miniProject.AeroScale.inventory.entity.InventoryReservation;
 import com.miniProject.AeroScale.inventory.repository.InventoryRepository;
 import com.miniProject.AeroScale.inventory.repository.InventoryReservationRepository;
 import com.miniProject.AeroScale.inventory.service.InventoryService;
 import com.miniProject.AeroScale.order.exception.ProductIsNotAvailable;
+import com.miniProject.AeroScale.product.entity.Product;
 import com.miniProject.AeroScale.product.exception.ProductNotFoundException;
+import com.miniProject.AeroScale.product.repository.ProductRepository;
+import com.miniProject.AeroScale.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.EmptyStackException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -25,6 +35,9 @@ public class InventoryServiceImpl implements InventoryService {
 
     private final InventoryRepository inventoryRepository;
     private final InventoryReservationRepository reservationRepository;
+    private final SellerService sellerService;
+    private final FlashSaleRepository flashSaleRepository;
+    private final ProductRepository productRepository;
 
     // Hardcoded for now...later tp application.properties
     private static final int LOCK_TIMEOUT_MINUTES = 5;
@@ -63,6 +76,7 @@ public class InventoryServiceImpl implements InventoryService {
     public void confirmStock(UUID orderId, UUID productId) {
         InventoryReservation reservation = getPendingReservationOrThrow(orderId, productId);
 
+
         Inventory inventory = inventoryRepository.findByProductId(productId)
                 .orElseThrow(() -> new IllegalStateException("Inventory record not found"));
 
@@ -71,6 +85,19 @@ public class InventoryServiceImpl implements InventoryService {
         inventory.setTotalStock(inventory.getTotalStock() - reservation.getQuantityLocked());
         inventory.setLockedStock(inventory.getLockedStock() - reservation.getQuantityLocked());
 
+        Product product = productRepository.findById(productId).orElseThrow();
+        Seller seller = sellerService.findSellerOrThrow(product.getSellerId());
+
+        Instant now = Instant.now();
+        Optional<FlashSale> flashSale = flashSaleRepository.IsThisProductIsActive(product);
+
+        BigDecimal price = product.getPrice();
+
+        if(!flashSale.isEmpty()) price = flashSale.get().getSalePrice();
+
+        BigDecimal profit = price.multiply(BigDecimal.valueOf(reservation.getQuantityLocked()));
+        seller.getTotalRevenew().add(profit);
+        seller.setTotalOrdersFullFilled(seller.getTotalOrdersFullFilled() + reservation.getQuantityLocked());
         reservation.setStatus(InventoryReservation.ReservationStatus.CONFIRMED);
     }
 

@@ -105,6 +105,12 @@ public class ProductServiceImpl implements ProductService {
         return product.getImageUrl();
     }
 
+    @Override
+    public Product findProductByIdOrThrow(UUID productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Product is not Available!!"));
+    }
+
     // Helper method to enforce data isolation (DRY Principle)
     private Product fetchProduct(UUID productId, UUID sellerId) {
         return productRepository.findByIdAndSellerId(productId, sellerId)

@@ -2,6 +2,7 @@ package com.miniProject.AeroScale.product.service;
 
 import com.miniProject.AeroScale.product.dto.request.ProductRequest;
 import com.miniProject.AeroScale.product.dto.response.ProductResponse;
+import com.miniProject.AeroScale.product.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -26,4 +27,5 @@ public interface ProductService {
 
     String getProductImageByProductId(UUID productId);
 
+    Product findProductByIdOrThrow(UUID productId);
 }

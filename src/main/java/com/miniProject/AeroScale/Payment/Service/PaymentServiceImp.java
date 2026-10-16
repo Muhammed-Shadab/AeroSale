@@ -113,7 +113,7 @@ public class PaymentServiceImp implements PaymentService {
         tx.setSignature(payload.getSignature());
 
         // order CONFIRMED + stock confirm. Ye fail hua to upar ka COMPLETED bhi rollback ho jata hai
-        orderService.confirmOrderPayment(tx.getOrderId());
+        orderService.confirmOrderPayment(tx.getOrderId(),buyerId);
     }
 
     private boolean verifySignature(String razorpayOrderId, String razorpayPaymentId,

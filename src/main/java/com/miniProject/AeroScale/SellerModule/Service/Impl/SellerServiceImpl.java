@@ -49,10 +49,11 @@ public class SellerServiceImpl implements SellerService {
                 .totalRevenue(seller.getTotalRevenew())
                 .maxConcurrentFlashSaleSlots(seller.getMaxConcurrentFlashSaleSlots())
                 .createdAt(seller.getCreatedAt())
+                .totalOrdersFullFilled(seller.getTotalOrdersFullFilled())
                 .build();
     }
 
-    private Seller findSellerOrThrow(UUID id) {
+    public Seller findSellerOrThrow(UUID id) {
         return sellerRepository.findById(id)
                 .orElseThrow(() -> new RequiredThingsNotFoundException("User Not Found"));
     }
