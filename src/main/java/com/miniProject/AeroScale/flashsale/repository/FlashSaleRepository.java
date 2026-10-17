@@ -74,4 +74,33 @@ public interface FlashSaleRepository extends JpaRepository<FlashSale, UUID> {
 
     @Query("select f from FlashSale f WHERE f.productId = :product and f.status = 'ACTIVE'")
     Optional<FlashSale> IsThisProductIsActive(@Param("product") Product product);
+
+    @Query(
+            value = """
+        select f
+        from FlashSale f
+        where f.productId in (
+            select p.id
+            from Product p
+            where p.sellerId = :sellerId
+        )
+        and (:status is null or f.status = :status)
+        order by f.createdAt desc, f.id desc
+        """,
+            countQuery = """
+        select count(f)
+        from FlashSale f
+        where f.productId in (
+            select p.id
+            from Product p
+            where p.sellerId = :sellerId
+        )
+        and (:status is null or f.status = :status)
+        """
+    )
+    Page<FlashSale> findSellerSales(
+            @Param("sellerId") UUID sellerId,
+            @Param("status") FlashSale.FlashSaleStatus status,
+            Pageable pageable
+    );
 }

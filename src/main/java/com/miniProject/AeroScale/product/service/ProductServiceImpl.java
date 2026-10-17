@@ -12,6 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -110,6 +112,22 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product is not Available!!"));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getProductsByIds(
+            Collection<UUID> productIds) {
+
+        if (productIds == null || productIds.isEmpty()) {
+            return List.of();
+        }
+
+        return productRepository.findAllById(productIds)
+                .stream()
+                .map(ProductResponse::fromEntity)
+                .toList();
+    }
+
 
     // Helper method to enforce data isolation (DRY Principle)
     private Product fetchProduct(UUID productId, UUID sellerId) {

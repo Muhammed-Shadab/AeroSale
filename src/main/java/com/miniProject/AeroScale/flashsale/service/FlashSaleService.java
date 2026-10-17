@@ -2,6 +2,7 @@ package com.miniProject.AeroScale.flashsale.service;
 
 import com.miniProject.AeroScale.flashsale.dto.request.SaleState;
 import com.miniProject.AeroScale.flashsale.dto.request.ScheduleFlashSaleRequest;
+import com.miniProject.AeroScale.flashsale.dto.response.SellerFlashSaleResponse;
 import com.miniProject.AeroScale.flashsale.entity.FlashSale;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,4 +36,12 @@ public interface FlashSaleService {
 
     // payment confirm hone par: us product ki ACTIVE sale ka soldQuantity += quantity
     void recordSale(UUID productId, int quantity);
+
+    // this is for the seller to get his own flashSales
+    Page<SellerFlashSaleResponse> getSellerSales(
+            UUID sellerId,
+            FlashSale.FlashSaleStatus status,
+            int page,
+            int size
+    );
 }

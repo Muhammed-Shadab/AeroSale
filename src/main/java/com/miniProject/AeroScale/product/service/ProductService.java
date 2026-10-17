@@ -6,6 +6,8 @@ import com.miniProject.AeroScale.product.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 public interface ProductService {
@@ -28,4 +30,7 @@ public interface ProductService {
     String getProductImageByProductId(UUID productId);
 
     Product findProductByIdOrThrow(UUID productId);
+
+    List<ProductResponse> getProductsByIds(Collection<UUID> productIds);
+
 }

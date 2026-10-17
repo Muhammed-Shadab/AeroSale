@@ -25,6 +25,9 @@ public class FlashSale {
     @Column(nullable = false, updatable = false)
     private UUID productId;
 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
     @Column(nullable = false)
     private Instant startTime;
 
@@ -52,6 +55,13 @@ public class FlashSale {
     @Column(nullable = false, length = 20)
     @Builder.Default
     private FlashSaleStatus status = FlashSaleStatus.SCHEDULED;
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = Instant.now();
+        }
+    }
 
     public enum FlashSaleStatus {
         SCHEDULED, ACTIVE, ENDED, CANCELLED

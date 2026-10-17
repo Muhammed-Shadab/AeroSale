@@ -2,6 +2,7 @@ package com.miniProject.AeroScale.flashsale.service.impl;
 
 import com.miniProject.AeroScale.flashsale.dto.request.SaleState;
 import com.miniProject.AeroScale.flashsale.dto.request.ScheduleFlashSaleRequest;
+import com.miniProject.AeroScale.flashsale.dto.response.SellerFlashSaleResponse;
 import com.miniProject.AeroScale.flashsale.entity.FlashSale;
 import com.miniProject.AeroScale.flashsale.entity.FlashSale.FlashSaleStatus;
 import com.miniProject.AeroScale.flashsale.exception.FlashSaleNotFoundException;
@@ -14,6 +15,7 @@ import com.miniProject.AeroScale.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -181,6 +183,58 @@ public class FlashSaleServiceImpl implements FlashSaleService {
     @Transactional
     public void recordSale(UUID productId, int quantity) {
         flashSaleRepository.addSold(productId, quantity, FlashSaleStatus.ACTIVE);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<SellerFlashSaleResponse> getSellerSales(UUID sellerId, FlashSaleStatus status, int page, int size) {
+
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 50);
+
+        PageRequest pageable = PageRequest.of(
+                safePage,
+                safeSize
+        );
+
+        // 1. Fetch only the authenticated seller's sales.
+        Page<FlashSale> sales =
+                flashSaleRepository.findSellerSales(
+                        sellerId,
+                        status,
+                        pageable
+                );
+
+        // 2. Collect unique product IDs from this page.
+        List<UUID> productIds = sales.getContent()
+                .stream()
+                .map(FlashSale::getProductId)
+                .distinct()
+                .toList();
+
+        // 3. Fetch all product details in bulk.
+        Map<UUID, ProductResponse> products =
+                productService.getProductsByIds(productIds)
+                        .stream()
+                        .collect(Collectors.toMap(
+                                ProductResponse::id,
+                                Function.identity()
+                        ));
+
+        // 4. Combine each sale with its product details.
+        return sales.map(sale -> {
+            ProductResponse product =
+                    products.get(sale.getProductId());
+
+            if (product == null) {
+                throw new IllegalStateException(
+                        "Product details are unavailable for flash sale "
+                                + sale.getId()
+                );
+            }
+
+            return SellerFlashSaleResponse.from(sale, product);
+        });
     }
 
     @Override
