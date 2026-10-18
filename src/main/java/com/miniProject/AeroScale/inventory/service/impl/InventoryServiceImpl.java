@@ -23,10 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.EmptyStackException;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -149,6 +146,7 @@ public class InventoryServiceImpl implements InventoryService {
         Inventory newLedger = Inventory.builder()
                 .productId(productId)
                 .totalStock(0)
+                .totalStockAdded(0)
                 .lockedStock(0)
                 .build();
 
@@ -167,6 +165,7 @@ public class InventoryServiceImpl implements InventoryService {
 
         // Add the new shipment to the physical total
         inventory.setTotalStock(inventory.getTotalStock() + additionalQuantity);
+        inventory.setTotalStockAdded(inventory.getTotalStockAdded() + additionalQuantity);
 
         log.info("Restocked {} units for product {}. New Total: {}",
                 additionalQuantity, productId, inventory.getTotalStock());
@@ -189,6 +188,23 @@ public class InventoryServiceImpl implements InventoryService {
         Inventory inventory = inventoryRepository.findByProductId(productId).
                 orElseThrow(() -> new ProductIsNotAvailable("Product Not Available!!"));
         return inventory.getAvailableStock();
+    }
+
+    @Override
+    public List<List<Integer>> getTotalStockThatAdded(List<UUID> productIdList) {
+        List<List<Integer>> res = new ArrayList<>();
+
+        for(UUID id: productIdList) {
+            Inventory inventory = inventoryRepository.findByProductId(id).
+                    orElseThrow(() -> new ProductIsNotAvailable("Product Not Available!!"));
+
+            List<Integer> row = new ArrayList<>();
+            row.add(inventory.getTotalStockAdded());
+            row.add(inventory.getAvailableStock());
+
+            res.add(row);
+        }
+        return res;
     }
 
     public String test() {

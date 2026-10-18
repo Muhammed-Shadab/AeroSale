@@ -4,12 +4,14 @@ import com.miniProject.AeroScale.inventory.service.InventoryService;
 import com.miniProject.AeroScale.product.dto.request.ProductRequest;
 import com.miniProject.AeroScale.product.dto.request.RestockRequest;
 import com.miniProject.AeroScale.product.dto.response.ProductResponse;
+import com.miniProject.AeroScale.product.entity.Product;
 import com.miniProject.AeroScale.product.service.ImageUploadService;
 import com.miniProject.AeroScale.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -64,10 +66,16 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<Page<ProductResponse>> getAllProducts(
-            @AuthenticationPrincipal(expression = "id") UUID sellerId,
-            @PageableDefault(size = 20) Pageable pageable) {
+            @AuthenticationPrincipal(expression = "id") UUID sellerId
+            , @PageableDefault(
+            size = 8,
+            sort = "createdAt",
+            direction = Sort.Direction.DESC
+            ) Pageable pageable
+            , @RequestParam(value = "status", required = false) Product.ProductStatus status
+            ,@RequestParam(value = "q", required = false) String q) {
 
-        Page<ProductResponse> response = productService.getAllProductsBySellerId(sellerId, pageable);
+        Page<ProductResponse> response = productService.getAllProductsBySellerId(sellerId, pageable, status, q);
 
         return ResponseEntity.ok(response);
     }

@@ -4,6 +4,7 @@ import com.miniProject.AeroScale.inventory.entity.Inventory;
 import com.miniProject.AeroScale.inventory.entity.InventoryReservation;
 
 import java.util.EmptyStackException;
+import java.util.List;
 import java.util.UUID;
 
 public interface InventoryService {
@@ -45,5 +46,6 @@ public interface InventoryService {
 
     int getStock(UUID productId);
 
+    List<List<Integer>> getTotalStockThatAdded(List<UUID> productList);
     String test();
 }

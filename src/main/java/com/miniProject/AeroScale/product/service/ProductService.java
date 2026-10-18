@@ -16,7 +16,7 @@ public interface ProductService {
 
     ProductResponse getProductByIdAndSellerId(UUID productId, UUID sellerId);
 
-    Page<ProductResponse> getAllProductsBySellerId(UUID sellerId, Pageable pageable);
+    Page<ProductResponse> getAllProductsBySellerId(UUID sellerId, Pageable pageable, Product.ProductStatus status, String q);
 
     ProductResponse updateProduct(UUID productId , UUID sellerId , ProductRequest request , String imageUrl);
 

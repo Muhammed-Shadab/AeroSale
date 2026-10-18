@@ -28,6 +28,9 @@ public class Inventory {
     @Column(nullable = false)
     private Integer totalStock;
 
+    @Column(nullable = false)
+    private Integer totalStockAdded;
+
     // The amount currently sitting in buyers' carts during checkout -- ye use hoga locking keliye
     @Builder.Default
     @Column(nullable = false)
