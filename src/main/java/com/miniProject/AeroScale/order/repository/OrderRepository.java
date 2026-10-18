@@ -5,6 +5,7 @@ import com.razorpay.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -24,4 +25,12 @@ public interface OrderRepository extends JpaRepository<Orders, UUID> {
     Optional<Orders> findByIdAndBuyerId(UUID id, UUID buyerId);
 
     List<Orders> findAllByBuyerId(UUID id);
+
+//
+//    @Query("""
+//            update Orders o
+//            set o.status = :actualStatus
+//            where o.id = :orderId and o.
+//            """)
+//    void changeTheOrderStatus(UUID id, UUID orderId, Orders.OrderStatus actualStatus);
 }

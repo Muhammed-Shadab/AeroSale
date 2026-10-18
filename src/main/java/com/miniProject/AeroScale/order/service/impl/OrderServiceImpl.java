@@ -6,27 +6,31 @@ import com.miniProject.AeroScale.BuyerModule.Service.BuyerService;
 import com.miniProject.AeroScale.BuyerModule.Service.CartService;
 import com.miniProject.AeroScale.Payment.DTO.Response.RazorPayOrderResponse;
 import com.miniProject.AeroScale.Payment.Service.PaymentService;
+import com.miniProject.AeroScale.SellerModule.Service.SellerService;
 import com.miniProject.AeroScale.flashsale.entity.FlashSale;
 import com.miniProject.AeroScale.flashsale.service.FlashSaleService;
 import com.miniProject.AeroScale.inventory.service.InventoryService;
 import com.miniProject.AeroScale.order.dto.request.CheckoutRequest;
 
-import com.miniProject.AeroScale.order.dto.response.OrderItemResponse;
-import com.miniProject.AeroScale.order.dto.response.OrderResponse;
-import com.miniProject.AeroScale.order.dto.response.OrdersResponseOfBuyer;
+import com.miniProject.AeroScale.order.dto.response.*;
 import com.miniProject.AeroScale.order.entity.OrderAddress;
 import com.miniProject.AeroScale.order.entity.OrderItem;
 import com.miniProject.AeroScale.order.entity.Orders;
 import com.miniProject.AeroScale.order.exception.EmptyCartException;
+import com.miniProject.AeroScale.order.exception.OrderNotAvailabe;
 import com.miniProject.AeroScale.order.repository.OrderItemRepository;
 import com.miniProject.AeroScale.order.repository.OrderRepository;
 import com.miniProject.AeroScale.order.service.OrderService;
 import com.miniProject.AeroScale.product.dto.response.ProductResponse;
+import com.miniProject.AeroScale.product.entity.Product;
 import com.miniProject.AeroScale.product.service.ProductService;
 import com.razorpay.Order;
 import com.razorpay.RazorpayException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -150,7 +154,7 @@ public class OrderServiceImpl implements OrderService {
         // Loop through the items and tell the vault to release the locks
 
         for (OrderItem item : order.getOrderItems()) {
-            System.out.println(item.getProductId());
+            item.setStatus(OrderItem.OrderItemStatus.CANCELLED);
             inventoryService.releaseStock(orderId, item.getProductId());
         }
 
@@ -177,7 +181,7 @@ public class OrderServiceImpl implements OrderService {
             inventoryService.confirmStock(orderId, item.getProductId());
             // sale ACTIVE hai to "claimed" bar badhao
             flashSaleService.recordSale(item.getProductId(), item.getQuantity());
-
+            item.setStatus(OrderItem.OrderItemStatus.CONFIRMED);
         }
 
         order.setStatus(Orders.OrderStatus.CONFIRMED);
@@ -185,7 +189,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrdersResponseOfBuyer getOrderOfBuyer(UUID id, long page, int size) {
+    public OrdersResponseOfBuyer getOrderOfBuyer(UUID id, long page, int size, String status) {
         if(id == null) throw new IllegalArgumentException("login first");
 
         List<Orders> orderList = orderRepository.findAllByBuyerId(id);
@@ -212,8 +216,62 @@ public class OrderServiceImpl implements OrderService {
 
             response.setContent(contentList);
         }
-
         return response;
+    }
 
+    @Override
+    public List<SellerOrderResponse> getOrderRelatedToSeller(UUID id, int page, int size, Orders.OrderStatus status) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<OrderItem> ordersPage = orderItemRepository.findOrdersOfSeller(id, status, pageable);
+
+        List<OrderItem> ordersList = ordersPage.get().toList();
+
+        List<SellerOrderResponse> sellerOrderResponses = new ArrayList<>();
+        for(OrderItem oi: ordersList) {
+            UUID productId = oi.getProductId();
+
+            Product product = productService.findProductByIdOrThrow(productId);
+
+            ProductDetails productDetails = ProductDetails.builder()
+                    .productId(productId.toString())
+                    .imageUrl(productService.getProductImageByProductId(productId))
+                    .productName(productService.getProductNameByProductId(productId))
+                    .quantity(oi.getQuantity())
+                    .unitPrice(oi.getUnitPriceAtPurchase())
+                    .subTotal(oi.getSubTotal())
+                    .build();
+
+
+            sellerOrderResponses.add(SellerOrderResponse.builder()
+                    .orderId(oi.getId().toString())
+                    .status(oi.getStatus().toString())
+                    .item(productDetails)
+                    .shippingAddress(oi.getOrder().getShippingAddressSnapshot())
+                    .sellerTotal(oi.getSubTotal())
+                    .build());
+        }
+
+        return sellerOrderResponses;
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<?> updateOrderStatus(UUID id, UUID orderId) {
+
+
+        OrderItem orderItem = orderItemRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotAvailabe("orderItem Record Not found!!"));
+
+        Product product = productService.findProductByIdOrThrow(orderItem.getProductId());
+        if(product.getSellerId().compareTo(id) != 0) {
+            throw new OrderNotAvailabe("Only Owner can perform this transition!!");
+        }
+
+        if(orderItem.getStatus().toString().equals("CONFIRMED")) orderItem.setStatus(OrderItem.OrderItemStatus.SHIPPED);
+        else if(orderItem.getStatus().toString().equals("SHIPPED")) orderItem.setStatus(OrderItem.OrderItemStatus.DELIVERED);
+        else throw new OrderNotAvailabe("Order is in " + orderItem.getStatus() + "status and bcz of this the transition is not possible");
+
+
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 }

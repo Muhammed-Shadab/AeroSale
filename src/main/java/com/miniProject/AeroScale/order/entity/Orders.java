@@ -73,7 +73,7 @@ public class Orders implements Persistable<UUID> {
     private Instant updatedAt;
 
     public enum OrderStatus {
-        PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
+        PENDING, CONFIRMED, CANCELLED
     }
 
     @PrePersist

@@ -89,7 +89,7 @@ public class InventoryServiceImpl implements InventoryService {
         Seller seller = sellerService.findSellerOrThrow(product.getSellerId());
 
         Instant now = Instant.now();
-        Optional<FlashSale> flashSale = flashSaleRepository.IsThisProductIsActive(product);
+        Optional<FlashSale> flashSale = flashSaleRepository.IsThisProductIsActive(product.getId());
 
         BigDecimal price = product.getPrice();
 
