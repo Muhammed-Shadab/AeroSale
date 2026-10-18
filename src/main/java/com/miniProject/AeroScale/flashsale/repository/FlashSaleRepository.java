@@ -40,6 +40,24 @@ public interface FlashSaleRepository extends JpaRepository<FlashSale, UUID> {
     int addSold(@Param("productId") UUID productId, @Param("qty") int qty,
                 @Param("status") FlashSaleStatus status);
 
+    @Modifying(
+            clearAutomatically = true,
+            flushAutomatically = true
+    )
+    @Query("""
+    update FlashSale f
+    set f.status = :cancelled
+    where f.id = :id
+      and f.status = :scheduled
+      and f.startTime > :now
+    """)
+    int cancelIfScheduledAndNotStarted(
+            @Param("id") UUID id,
+            @Param("scheduled") FlashSaleStatus scheduled,
+            @Param("cancelled") FlashSaleStatus cancelled,
+            @Param("now") Instant now
+    );
+
     // scheduler: ek hi UPDATE mein sab sales ka status badalta hai
     @Modifying(clearAutomatically = true)
     @Query("update FlashSale f set f.status = :to where f.status in :from and f.endTime <= :now")
@@ -53,6 +71,38 @@ public interface FlashSaleRepository extends JpaRepository<FlashSale, UUID> {
     int markActive(@Param("to") FlashSaleStatus to,
                    @Param("from") FlashSaleStatus from,
                    @Param("now") Instant now);
+
+    @Query("select f from FlashSale f WHERE f.productId = :product and f.status = 'ACTIVE'")
+    Optional<FlashSale> IsThisProductIsActive(@Param("product") Product product);
+
+    @Query(
+            value = """
+        select f
+        from FlashSale f
+        where f.productId in (
+            select p.id
+            from Product p
+            where p.sellerId = :sellerId
+        )
+        and (:status is null or f.status = :status)
+        order by f.createdAt desc, f.id desc
+        """,
+            countQuery = """
+        select count(f)
+        from FlashSale f
+        where f.productId in (
+            select p.id
+            from Product p
+            where p.sellerId = :sellerId
+        )
+        and (:status is null or f.status = :status)
+        """
+    )
+    Page<FlashSale> findSellerSales(
+            @Param("sellerId") UUID sellerId,
+            @Param("status") FlashSale.FlashSaleStatus status,
+            Pageable pageable
+    );
 
     @Query("select f from FlashSale f WHERE f.productId = :product and f.status = 'ACTIVE'")
     Optional<FlashSale> IsThisProductIsActive(@Param("product") UUID product);
