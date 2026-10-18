@@ -220,7 +220,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<SellerOrderResponse> getOrderRelatedToSeller(UUID id, int page, int size, Orders.OrderStatus status) {
+    public List<SellerOrderResponse> getOrderRelatedToSeller(UUID id, int page, int size, OrderItem.OrderItemStatus status) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<OrderItem> ordersPage = orderItemRepository.findOrdersOfSeller(id, status, pageable);
 

@@ -59,7 +59,7 @@ public class OrderController {
     public List<SellerOrderResponse> getOrdersRelatedToSeller(@AuthenticationPrincipal(expression = "id") UUID id,
                                                               @RequestParam(defaultValue = "0") int page,
                                                               @RequestParam(defaultValue = "8") int size,
-                                                              @RequestParam(required = false) Orders.OrderStatus status) {
+                                                              @RequestParam(required = false) OrderItem.OrderItemStatus status) {
         return orderService.getOrderRelatedToSeller(id, page, size, status);
     }
 

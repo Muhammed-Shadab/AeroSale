@@ -22,5 +22,5 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, UUID> {
     WHERE (oi.status <> 'PENDING' OR oi.status = :status)
       AND p.sellerId = :id
     """)
-    Page<OrderItem> findOrdersOfSeller(UUID id, Orders.OrderStatus status, Pageable pageable);
+    Page<OrderItem> findOrdersOfSeller(UUID id, OrderItem.OrderItemStatus status, Pageable pageable);
 }
