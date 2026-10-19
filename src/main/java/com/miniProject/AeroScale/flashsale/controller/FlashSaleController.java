@@ -18,7 +18,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/flash-sales")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('SELLER')")
 public class FlashSaleController {
 
     private final FlashSaleService flashSaleService;
@@ -47,7 +46,6 @@ public class FlashSaleController {
                                                                         @RequestParam(required = false) FlashSale.FlashSaleStatus status,
                                                                         @RequestParam(defaultValue = "0") int page,
                                                                         @RequestParam(defaultValue = "8") int size) {
-
         Page<SellerFlashSaleResponse> response = flashSaleService.getSellerSales(sellerId, status, page, size);
 
         return ResponseEntity.ok(response);

@@ -1,5 +1,6 @@
 package com.miniProject.AeroScale.AuthModule.Security;
 
+import com.miniProject.AeroScale.AuthModule.Entity.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,7 +35,11 @@ public class Configurations {
                         SessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((authorize) -> (authorize)
                         .requestMatchers("/api/auth/register", "/api/auth/login",
-                                "/api/auth/refreshToken", "/temp.html" , "/error").permitAll()
+                                "/api/auth/refreshToken").permitAll()
+                        .requestMatchers("/api/buyer/*").hasRole("BUYER")
+                        .requestMatchers("/api/cart/*").hasRole("BUYER")
+                        .requestMatchers("/api/v1/flash-sales*").hasRole("SELLER")
+                        .requestMatchers("/api/seller*").hasRole("SELLER")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

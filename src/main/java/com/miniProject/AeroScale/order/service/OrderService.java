@@ -8,6 +8,7 @@ import com.miniProject.AeroScale.order.entity.OrderItem;
 import com.miniProject.AeroScale.order.entity.Orders;
 import com.razorpay.RazorpayException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -22,7 +23,7 @@ public interface OrderService {
     // Simulates a successful payment webhook : we do not have a payment service right now, for now we just simulate.
     void confirmOrderPayment(UUID orderId, UUID id);
 
-    OrdersResponseOfBuyer getOrderOfBuyer(UUID id, long page, int size, String status);
+    OrdersResponseOfBuyer getOrderOfBuyer(UUID id, Pageable pageable,  Orders.OrderStatus status);
 
     List<SellerOrderResponse> getOrderRelatedToSeller(UUID id, int page, int size, OrderItem.OrderItemStatus status);
 

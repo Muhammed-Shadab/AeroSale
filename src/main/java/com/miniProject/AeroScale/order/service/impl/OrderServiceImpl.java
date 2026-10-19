@@ -195,10 +195,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrdersResponseOfBuyer getOrderOfBuyer(UUID id, long page, int size, String status) {
+    public OrdersResponseOfBuyer getOrderOfBuyer(UUID id, Pageable pageable, Orders.OrderStatus status) {
         if(id == null) throw new IllegalArgumentException("login first");
 
-        List<Orders> orderList = orderRepository.findAllByBuyerId(id);
+        List<Orders> orderList = orderRepository.findOrdersOfBuyer(id,pageable,status);
 
 
         OrdersResponseOfBuyer response = new OrdersResponseOfBuyer();
