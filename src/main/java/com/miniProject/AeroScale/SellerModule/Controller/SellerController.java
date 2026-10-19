@@ -1,12 +1,14 @@
 package com.miniProject.AeroScale.SellerModule.Controller;
 
 import com.miniProject.AeroScale.SellerModule.DTO.Request.UpdateProfileRequest;
+import com.miniProject.AeroScale.SellerModule.DTO.Response.AnalyticsResponse;
 import com.miniProject.AeroScale.SellerModule.DTO.Response.ProfileResponse;
 import com.miniProject.AeroScale.SellerModule.Service.SellerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +33,12 @@ public class SellerController {
     public ResponseEntity<ProfileResponse> getProfile(@AuthenticationPrincipal(expression = "id") UUID id ,
                                                     @AuthenticationPrincipal(expression= "email") String email) {
         return ResponseEntity.status(HttpStatus.CREATED).body(sellerService.getProfile(id, email));
+    }
+
+    @GetMapping("/analytics")
+    public ResponseEntity<AnalyticsResponse> getDataForAnalytics(@AuthenticationPrincipal(expression = "id") UUID id
+                                    , @RequestParam int days) {
+        return ResponseEntity.ok(sellerService.getDataForAnalytics(id, days));
     }
 
 }

@@ -109,9 +109,14 @@ public class OrderServiceImpl implements OrderService {
             flashSaleService.validateFlashSalePurchase(cartItem.getProductId(), cartItem.getItemCount());
 
             // price backend decide karta hai: sale LIVE ho to salePrice, warna regular price
-            BigDecimal unitPrice = flashSaleService.findLiveSale(cartItem.getProductId())
-                    .map(FlashSale::getSalePrice)
-                    .orElse(productResponse.price());
+            BigDecimal unitPrice = productResponse.price();
+            Optional<FlashSale> sale = flashSaleService.findLiveSale(cartItem.getProductId());
+
+            boolean isSalePresent = false;
+            if(sale.isPresent()) {
+                unitPrice = sale.get().getSalePrice();
+                isSalePresent = true;
+            }
 
             // Lock the stock in the Vault (Throws exception if unavailable)
             inventoryService.reserveStock(cartItem.getProductId(), orderId, cartItem.getItemCount());
@@ -124,6 +129,7 @@ public class OrderServiceImpl implements OrderService {
                     .quantity(cartItem.getItemCount())
                     .unitPriceAtPurchase(unitPrice)
                     .subTotal(subTotal)
+                    .isFlashSaleProduct(isSalePresent)
                     .build();
 
             order.addOrderItem(orderItem);

@@ -93,7 +93,7 @@ public class InventoryServiceImpl implements InventoryService {
         if(!flashSale.isEmpty()) price = flashSale.get().getSalePrice();
 
         BigDecimal profit = price.multiply(BigDecimal.valueOf(reservation.getQuantityLocked()));
-        seller.getTotalRevenew().add(profit);
+        seller.setTotalRevenew(seller.getTotalRevenew().add(profit));
         seller.setTotalOrdersFullFilled(seller.getTotalOrdersFullFilled() + reservation.getQuantityLocked());
         reservation.setStatus(InventoryReservation.ReservationStatus.CONFIRMED);
     }

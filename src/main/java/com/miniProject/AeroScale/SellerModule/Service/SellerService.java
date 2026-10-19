@@ -1,6 +1,7 @@
 package com.miniProject.AeroScale.SellerModule.Service;
 
 import com.miniProject.AeroScale.SellerModule.DTO.Request.UpdateProfileRequest;
+import com.miniProject.AeroScale.SellerModule.DTO.Response.AnalyticsResponse;
 import com.miniProject.AeroScale.SellerModule.DTO.Response.ProfileResponse;
 import com.miniProject.AeroScale.SellerModule.Entity.Seller;
 import jakarta.validation.Valid;
@@ -13,4 +14,6 @@ public interface SellerService {
     ProfileResponse getProfile(UUID id, String email);
 
     Seller findSellerOrThrow(UUID id);
+
+    AnalyticsResponse getDataForAnalytics(UUID id, int days);
 }

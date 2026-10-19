@@ -44,6 +44,9 @@ public class OrderItem {
     private Instant createdAt;
 
     @Column(nullable = false)
+    private Boolean isFlashSaleProduct = false;
+
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private OrderItemStatus status = OrderItemStatus.PENDING;
