@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -26,8 +28,6 @@ import java.util.List;
 public class Configurations {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final CorsConfigurationSource corsConfigurationSource;
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -35,23 +35,22 @@ public class Configurations {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors ->
-                        cors.configurationSource(corsConfigurationSource)
-                )
+                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .formLogin(formLogin -> formLogin.disable())
-                .sessionManagement(SessionManagementConfigurer ->
-                        SessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests((authorize) -> (authorize)
-//                        .requestMatchers("/api/auth/register", "/api/auth/login",
-//                                "/api/auth/refreshToken").permitAll()
-//                        .requestMatchers("/api/buyer/*").hasRole("BUYER")
-//                        .requestMatchers("/api/cart/*").hasRole("BUYER")
-//                        .requestMatchers("/api/v1/flash-sales*").hasRole("SELLER")
-//                        .requestMatchers("/api/seller*").hasRole("SELLER")
-                        .anyRequest().permitAll())
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/api/auth/register", "/api/auth/login",
+                                "/api/auth/refreshToken", "/api/auth/test", "/temp.html", "/error").permitAll()
+                        .requestMatchers("/api/buyer/**").hasRole("BUYER")
+                        .requestMatchers("/api/cart/**").hasRole("BUYER")
+                        .requestMatchers("/api/v1/flash-sales/**").hasRole("SELLER")
+                        .requestMatchers("/api/seller/**").hasRole("SELLER")
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -63,35 +62,37 @@ public class Configurations {
     }
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource(
-            @Value("${app.cors.allowed-origins}")
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${app.cors.allowed-origins:https://aero-scale-frontend.vercel.app,http://localhost:5173}")
             String allowedOrigins) {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(
-                Arrays.stream(allowedOrigins.split(","))
-                        .map(String::trim)
-                        .filter(origin -> !origin.isEmpty())
-                        .toList()
-        );
+        List<String> origins = Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .toList();
+
+        // Allows specified Vercel domains, preview domains, and local dev
+        config.setAllowedOriginPatterns(List.of(
+                "https://*.vercel.app",
+                "https://aero-scale-frontend.vercel.app",
+                "http://localhost:*"
+        ));
 
         config.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
         ));
 
-        config.setAllowedHeaders(List.of(
-                "Authorization", "Content-Type", "Accept", "Origin"
-        ));
+        // Allow any header requested by the browser client
+        config.setAllowedHeaders(List.of("*"));
 
-        config.setExposedHeaders(List.of("Date"));
-        config.setAllowCredentials(false);
+        config.setExposedHeaders(List.of("Date", "Authorization"));
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
-
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-
         return source;
     }
 }
