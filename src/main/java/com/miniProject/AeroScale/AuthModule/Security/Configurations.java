@@ -45,12 +45,12 @@ public class Configurations {
                 .sessionManagement(SessionManagementConfigurer ->
                         SessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((authorize) -> (authorize)
-                        .requestMatchers("/api/auth/register", "/api/auth/login",
-                                "/api/auth/refreshToken").permitAll()
-                        .requestMatchers("/api/buyer/*").hasRole("BUYER")
-                        .requestMatchers("/api/cart/*").hasRole("BUYER")
-                        .requestMatchers("/api/v1/flash-sales*").hasRole("SELLER")
-                        .requestMatchers("/api/seller*").hasRole("SELLER")
+//                        .requestMatchers("/api/auth/register", "/api/auth/login",
+//                                "/api/auth/refreshToken").permitAll()
+//                        .requestMatchers("/api/buyer/*").hasRole("BUYER")
+//                        .requestMatchers("/api/cart/*").hasRole("BUYER")
+//                        .requestMatchers("/api/v1/flash-sales*").hasRole("SELLER")
+//                        .requestMatchers("/api/seller*").hasRole("SELLER")
                         .anyRequest().permitAll())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
