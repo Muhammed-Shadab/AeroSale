@@ -51,7 +51,7 @@ public class Configurations {
                         .requestMatchers("/api/cart/*").hasRole("BUYER")
                         .requestMatchers("/api/v1/flash-sales*").hasRole("SELLER")
                         .requestMatchers("/api/seller*").hasRole("SELLER")
-                        .anyRequest().authenticated())
+                        .anyRequest().permitAll())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
