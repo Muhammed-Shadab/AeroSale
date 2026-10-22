@@ -167,6 +167,7 @@ public class SellerServiceImpl implements SellerService {
 
         for(OrderItem oi: orderItemList) {
             String id = oi.getProductId().toString();
+            if(oi.getStatus().toString().equals("PENDING") || oi.getStatus().toString().equals("CANCELLED")) continue;
             revenue.put(id, revenue.getOrDefault(id, BigDecimal.ZERO)
                     .add(oi.getSubTotal()));
             units.put(id, units.getOrDefault(id, 0L)*1L +

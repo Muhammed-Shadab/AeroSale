@@ -66,6 +66,7 @@ public class Configurations {
             @Value("${app.cors.allowed-origins:https://aero-scale-frontend.vercel.app,http://localhost:5173}")
             String allowedOrigins) {
 
+        System.out.println(allowedOrigins);
         CorsConfiguration config = new CorsConfiguration();
 
         List<String> origins = Arrays.stream(allowedOrigins.split(","))
