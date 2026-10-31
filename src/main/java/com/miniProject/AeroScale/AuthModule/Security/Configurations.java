@@ -61,39 +61,38 @@ public class Configurations {
         return config.getAuthenticationManager();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource(
-            @Value("${app.cors.allowed-origins:https://aero-scale-frontend.vercel.app,http://localhost:5173}")
-            String allowedOrigins) {
-
-        System.out.println(allowedOrigins);
-        CorsConfiguration config = new CorsConfiguration();
-
-        List<String> origins = Arrays.stream(allowedOrigins.split(","))
-                .map(String::trim)
-                .filter(origin -> !origin.isEmpty())
-                .toList();
-
-        // Allows specified Vercel domains, preview domains, and local dev
-        config.setAllowedOriginPatterns(List.of(
-                "https://*.vercel.app",
-                "https://aero-scale-frontend.vercel.app",
-                "http://localhost:*"
-        ));
-
-        config.setAllowedMethods(List.of(
-                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
-        ));
-
-        // Allow any header requested by the browser client
-        config.setAllowedHeaders(List.of("*"));
-
-        config.setExposedHeaders(List.of("Date", "Authorization"));
-        config.setAllowCredentials(true);
-        config.setMaxAge(3600L);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource(
+//            @Value("${app.cors.allowed-origins}")
+//            String allowedOrigins) {
+//
+//        System.out.println(allowedOrigins);
+//        CorsConfiguration config = new CorsConfiguration();
+//
+//        List<String> origins = Arrays.stream(allowedOrigins.split(","))
+//                .map(String::trim)
+//                .filter(origin -> !origin.isEmpty())
+//                .toList();
+//
+//        // Allows specified Vercel domains, preview domains, and local dev
+//        config.setAllowedOriginPatterns(List.of(
+//                "https://aero-scale-frontend.vercel.app",
+//                "http://localhost:5143"
+//        ));
+//
+//        config.setAllowedMethods(List.of(
+//                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
+//        ));
+//
+//        // Allow any header requested by the browser client
+//        config.setAllowedHeaders(List.of("*"));
+//
+//        config.setExposedHeaders(List.of("Date", "Authorization"));
+//        config.setAllowCredentials(true);
+//        config.setMaxAge(3600L);
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", config);
+//        return source;
+//    }
 }

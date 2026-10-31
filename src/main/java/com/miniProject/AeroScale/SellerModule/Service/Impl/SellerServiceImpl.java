@@ -16,6 +16,8 @@ import com.miniProject.AeroScale.product.repository.ProductRepository;
 import com.miniProject.AeroScale.product.service.ProductService;
 import com.razorpay.Order;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +38,7 @@ public class SellerServiceImpl implements SellerService {
     private final SellerRepository sellerRepository;
     private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
+    private final RedisTemplate redisTemplate;
 
     @Override
     @Transactional
@@ -76,7 +79,9 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
+    @Cacheable(value = "Seller:Analytics", key = "#id + '_' + #days" )
     public AnalyticsResponse getDataForAnalytics(UUID id, int days) {
+        System.out.println("going for the db");
         Instant end = Instant.now();
         Instant start = end.minus(days, ChronoUnit.DAYS);
 
@@ -149,7 +154,7 @@ public class SellerServiceImpl implements SellerService {
 
 
 
-        return AnalyticsResponse.builder()
+        AnalyticsResponse response = AnalyticsResponse.builder()
                 .rangeDays(days)
                 .from(start.atZone(ZoneId.of("Asia/Kolkata")).toLocalDate())
                 .to(end.atZone(ZoneId.of("Asia/Kolkata")).toLocalDate())
@@ -159,6 +164,8 @@ public class SellerServiceImpl implements SellerService {
                 .topProducts(getTopProductsForAnalytics(orderItemList))
                 .revenueBySource(new RevenueBySource(revenueByFlashSale, revenueByNormal))
                 .build();
+
+        return response;
     }
 
     public List<TopProductsAnalytics> getTopProductsForAnalytics(List<OrderItem> orderItemList) {

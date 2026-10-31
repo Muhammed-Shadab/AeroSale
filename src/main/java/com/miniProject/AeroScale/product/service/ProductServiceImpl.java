@@ -1,6 +1,7 @@
 package com.miniProject.AeroScale.product.service;
 
 import com.miniProject.AeroScale.inventory.service.InventoryService;
+import com.miniProject.AeroScale.product.cache.ProductCache;
 import com.miniProject.AeroScale.product.dto.request.ProductRequest;
 import com.miniProject.AeroScale.product.dto.response.ProductResponse;
 import com.miniProject.AeroScale.product.entity.Product;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 import javax.print.attribute.standard.PageRanges;
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final InventoryService inventoryService;
+    private final ProductCache productCache;
 
     @Override
     @Transactional
@@ -55,11 +58,19 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public Page<ProductResponse> getAllProductsBySellerId(UUID sellerId, Pageable pageable,  Product.ProductStatus status, String q) {
-
+        if(productCache.canCacheThisPage(pageable)) {
+            return productCache.load(sellerId, status).slice(pageable);
+        }
 
         Page<Product> productsPage = productRepository.findAllBySellerId(sellerId, pageable, status);
-        List<Product> productList = productsPage.getContent();
+        List<ProductResponse> productResponseList = ProductsToProductResponse(productsPage.getContent());
 
+        return new PageImpl<>(productResponseList, pageable, productResponseList.size());
+    }
+
+
+    @Override
+    public List<ProductResponse> ProductsToProductResponse(List<Product> productList) {
         List<UUID> productIdsList = new ArrayList<>();
         for(Product product: productList) productIdsList.add(product.getId());
 
@@ -68,10 +79,7 @@ public class ProductServiceImpl implements ProductService {
         for(int i=0;i<productIdsList.size();i++) {
             productResponseList.add(ProductResponse.fromEntity(productList.get(i), inventoryInfo.get(i).get(0), inventoryInfo.get(i).get(1)));
         }
-
-        return new PageImpl<>(productResponseList, pageable, productResponseList.size());
-
-
+        return productResponseList;
     }
 
     @Override

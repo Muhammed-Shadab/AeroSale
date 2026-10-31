@@ -33,4 +33,5 @@ public interface ProductService {
 
     List<ProductResponse> getProductsByIds(Collection<UUID> productIds);
 
+    List<ProductResponse> ProductsToProductResponse(List<Product> content);
 }

@@ -9,6 +9,7 @@ import com.miniProject.AeroScale.product.service.ImageUploadService;
 import com.miniProject.AeroScale.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
