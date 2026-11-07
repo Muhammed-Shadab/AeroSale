@@ -1,5 +1,6 @@
 package com.miniProject.AeroScale.flashsale.service.impl;
 
+import com.miniProject.AeroScale.flashsale.dto.request.ProductDetails;
 import com.miniProject.AeroScale.flashsale.dto.request.SaleState;
 import com.miniProject.AeroScale.flashsale.dto.request.ScheduleFlashSaleRequest;
 import com.miniProject.AeroScale.flashsale.dto.response.SellerFlashSaleResponse;
@@ -17,9 +18,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
@@ -36,6 +41,7 @@ public class FlashSaleServiceImpl implements FlashSaleService {
     private final FlashSaleRepository flashSaleRepository;
     private final ProductService productService;
     private final InventoryService inventoryService;
+
 
     @Override
     @Transactional(readOnly = true)
@@ -237,6 +243,32 @@ public class FlashSaleServiceImpl implements FlashSaleService {
         });
     }
 
+    @Override
+    public ResponseEntity<UUID> checkout(ProductDetails productDetails, UUID buyerId) {
+
+        FlashSale sale = flashSaleRepository.IsThisProductIsActive(productDetails.getProductId())
+                .orElseThrow(() -> new FlashSaleNotFoundException("No Active Sale Is Available For This Product"));
+
+        if(sale.getEndTime().isBefore(Instant.now()))
+            throw new FlashSaleNotFoundException("No Active Sale Is Available For This Product");
+
+        if(sale.getMaxItemsPerUser() < productDetails.getQuantity())
+            throw new FlashSaleNotFoundException("Your Quantity Should be less then Or Equal to  " + sale.getMaxItemsPerUser());
+
+        BigDecimal calculatedPrice = sale.getSalePrice().multiply(BigDecimal.valueOf(productDetails.getQuantity()));
+
+        if(calculatedPrice.intValue() != productDetails.getTotalPrice().intValue())
+            throw new FlashSaleNotFoundException("Frontend Price is not equal to the clculated price");
+
+        UUID orderId = UUID.randomUUID();
+
+        // while integrating the redis we have to minus the stock at this step using lua script
+
+        inventoryService.reserveStock(productDetails.getProductId(), orderId, productDetails.getQuantity());
+        //orderService.createOrderForFlashSale(productsDetails, buyerIdm, orderId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderId);
+    }
     @Override
     @Transactional
     public void refreshStatuses() {

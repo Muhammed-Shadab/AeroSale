@@ -1,8 +1,10 @@
 package com.miniProject.AeroScale.order.service;
 
 import com.miniProject.AeroScale.order.dto.request.CheckoutRequest;
+import com.miniProject.AeroScale.order.dto.request.FlashSaleProductDetails;
 import com.miniProject.AeroScale.order.dto.response.OrderResponse;
 import com.miniProject.AeroScale.order.dto.response.OrdersResponseOfBuyer;
+import com.miniProject.AeroScale.order.dto.response.ProductDetails;
 import com.miniProject.AeroScale.order.dto.response.SellerOrderResponse;
 import com.miniProject.AeroScale.order.entity.OrderItem;
 import com.miniProject.AeroScale.order.entity.Orders;
@@ -29,5 +31,5 @@ public interface OrderService {
 
     ResponseEntity<?> updateOrderStatus(UUID id, UUID orderId);
 
-    //ResponseEntity<?> updateOrderStatus(UUID id, UUID orderId, String status);
+    void createOrderForFlashSale(FlashSaleProductDetails productDetails, UUID BuyerId, UUID orderId);
 }

@@ -47,5 +47,4 @@ public interface InventoryService {
     int getStock(UUID productId);
 
     List<List<Integer>> getTotalStockThatAdded(List<UUID> productList);
-    String test();
 }

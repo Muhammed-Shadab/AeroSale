@@ -15,16 +15,19 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HexFormat;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -49,19 +52,16 @@ public class PaymentServiceImp implements PaymentService {
     }
 
     @Override
-    public RazorPayOrderResponse createRazorPayOrder(Orders savedOrder) throws RazorpayException {
+    public RazorPayOrderResponse createRazorPayOrder(UUID orderId, BigDecimal totalAmount) throws RazorpayException {
         RazorpayClient razorpay = new RazorpayClient(key, secretKey);
 
         // rupees -> paise
-        int amount = savedOrder.getTotalAmount()
-                .setScale(2, RoundingMode.HALF_UP)
-                .movePointRight(2)
-                .intValueExact();
+        int amount = RupeesToPaisa(totalAmount);
 
         JSONObject orderRequest = new JSONObject();
         orderRequest.put("amount", amount);
         orderRequest.put("currency", "INR");
-        orderRequest.put("receipt", "AeroScale_" + savedOrder.getId());
+        orderRequest.put("receipt", "AeroScale_" + orderId);
         JSONObject notes = new JSONObject();
         notes.put("note1", "AeroScale");
         orderRequest.put("notes", notes);
@@ -70,14 +70,21 @@ public class PaymentServiceImp implements PaymentService {
         String rzpOrderId = order.get("id");
 
         Transactions transactions = Transactions.builder()
-                .orderId(savedOrder.getId())
+                .orderId(orderId)
                 .razorpayOrderId(rzpOrderId)
-                .amount(savedOrder.getTotalAmount())
+                .amount(totalAmount)
                 .status(Transactions.Status.PENDING)
                 .build();
         transactionsRepository.save(transactions);
 
         return new RazorPayOrderResponse(key, amount, rzpOrderId);
+    }
+
+    public int RupeesToPaisa(BigDecimal amount) {
+        return  amount
+                .setScale(2, RoundingMode.HALF_UP)
+                .movePointRight(2)
+                .intValueExact();
     }
 
     @Override
@@ -115,6 +122,23 @@ public class PaymentServiceImp implements PaymentService {
         // order CONFIRMED + stock confirm. Ye fail hua to upar ka COMPLETED bhi rollback ho jata hai
         orderService.confirmOrderPayment(tx.getOrderId(),buyerId);
     }
+
+    @Override
+    public ResponseEntity<RazorPayOrderResponse> getRazorPayOrderIdByOrderId(UUID orderId) {
+        Optional<Transactions> transaction = transactionsRepository.findByOrderId(orderId);
+
+        if(!transaction.isPresent() || transaction.get().getRazorpayOrderId() == null)
+            throw new RazorPayOrderIdNotFound("Inventory is not updated yet");
+
+        var response = RazorPayOrderResponse.builder()
+                .amount(RupeesToPaisa(transaction.get().getAmount()))
+                .orderId(transaction.get().getRazorpayOrderId())
+                .keyID(key)
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
 
     private boolean verifySignature(String razorpayOrderId, String razorpayPaymentId,
                                     String razorpaySignature) throws Exception {

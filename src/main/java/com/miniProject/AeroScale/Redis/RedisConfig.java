@@ -1,16 +1,14 @@
 package com.miniProject.AeroScale.Redis;
 
 import com.miniProject.AeroScale.SellerModule.DTO.Response.AnalyticsResponse;
+import com.miniProject.AeroScale.order.dto.response.OrdersResponseOfBuyer;
 import com.miniProject.AeroScale.product.cache.ProductWindow;
-import com.miniProject.AeroScale.product.dto.response.ProductResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.*;
-import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -44,6 +42,7 @@ public class RedisConfig {
                                 .fromSerializer(productResponseRedisSerializer)
                 );
         configurationMap.put("Seller:Products", sellerProducts);
+        
 
         return RedisCacheManager.builder(connectionFactory)
                 .withInitialCacheConfigurations(configurationMap)

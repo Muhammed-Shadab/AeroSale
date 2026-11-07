@@ -81,7 +81,6 @@ public class SellerServiceImpl implements SellerService {
     @Override
     @Cacheable(value = "Seller:Analytics", key = "#id + '_' + #days" )
     public AnalyticsResponse getDataForAnalytics(UUID id, int days) {
-        System.out.println("going for the db");
         Instant end = Instant.now();
         Instant start = end.minus(days, ChronoUnit.DAYS);
 

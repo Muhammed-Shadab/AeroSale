@@ -2,16 +2,18 @@ package com.miniProject.AeroScale.order.service.impl;
 
 import com.miniProject.AeroScale.BuyerModule.DTO.Response.AddAddressResponse;
 import com.miniProject.AeroScale.BuyerModule.DTO.Response.CartResponse;
+import com.miniProject.AeroScale.BuyerModule.Entity.BuyerAddress;
+import com.miniProject.AeroScale.BuyerModule.Repository.BuyerAddressRepository;
 import com.miniProject.AeroScale.BuyerModule.Service.BuyerService;
 import com.miniProject.AeroScale.BuyerModule.Service.CartService;
 import com.miniProject.AeroScale.Payment.DTO.Response.RazorPayOrderResponse;
 import com.miniProject.AeroScale.Payment.Service.PaymentService;
-import com.miniProject.AeroScale.SellerModule.Service.SellerService;
 import com.miniProject.AeroScale.flashsale.entity.FlashSale;
 import com.miniProject.AeroScale.flashsale.service.FlashSaleService;
 import com.miniProject.AeroScale.inventory.service.InventoryService;
 import com.miniProject.AeroScale.order.dto.request.CheckoutRequest;
 
+import com.miniProject.AeroScale.order.dto.request.FlashSaleProductDetails;
 import com.miniProject.AeroScale.order.dto.response.*;
 import com.miniProject.AeroScale.order.entity.OrderAddress;
 import com.miniProject.AeroScale.order.entity.OrderItem;
@@ -24,7 +26,6 @@ import com.miniProject.AeroScale.order.service.OrderService;
 import com.miniProject.AeroScale.product.dto.response.ProductResponse;
 import com.miniProject.AeroScale.product.entity.Product;
 import com.miniProject.AeroScale.product.service.ProductService;
-import com.razorpay.Order;
 import com.razorpay.RazorpayException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,6 +58,7 @@ public class OrderServiceImpl implements OrderService {
     private final ProductService productService;
     private final InventoryService inventoryService;
     private final PaymentService paymentService;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -141,7 +143,7 @@ public class OrderServiceImpl implements OrderService {
         Orders savedOrder = orderRepository.save(order);
         cartService.clearCart(buyerId);
 
-        RazorPayOrderResponse orderResponse = paymentService.createRazorPayOrder(savedOrder);
+        RazorPayOrderResponse orderResponse = paymentService.createRazorPayOrder(savedOrder.getId(), savedOrder.getTotalAmount());
         return OrderResponse.fromEntity(savedOrder, orderResponse.getOrderId(), key, null);
     }
 
@@ -197,9 +199,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrdersResponseOfBuyer getOrderOfBuyer(UUID id, Pageable pageable, Orders.OrderStatus status) {
         if(id == null) throw new IllegalArgumentException("login first");
-
         List<Orders> orderList = orderRepository.findOrdersOfBuyer(id,pageable,status);
-
 
         OrdersResponseOfBuyer response = new OrdersResponseOfBuyer();
         response.setLast(true);
@@ -210,9 +210,9 @@ public class OrderServiceImpl implements OrderService {
 
         if(orderList.size() > 0) {
             List<OrderResponse> contentList = new ArrayList<>();
-            for(Orders order: orderList) {
+            for (Orders order : orderList) {
                 List<OrderItemResponse> orderItemResponses = new ArrayList<>();
-                for(OrderItem orderItem: order.getOrderItems()) {
+                for (OrderItem orderItem : order.getOrderItems()) {
                     orderItemResponses.add(OrderItemResponse.fromEntity(orderItem,
                             productService.getProductNameByProductId(orderItem.getProductId()),
                             productService.getProductImageByProductId(orderItem.getProductId())));
@@ -222,8 +222,10 @@ public class OrderServiceImpl implements OrderService {
 
             response.setContent(contentList);
         }
+
         return response;
     }
+
 
     @Override
     public List<SellerOrderResponse> getOrderRelatedToSeller(UUID id, int page, int size, OrderItem.OrderItemStatus status) {
@@ -279,5 +281,45 @@ public class OrderServiceImpl implements OrderService {
 
 
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @Override
+    @Transactional
+    public void createOrderForFlashSale(FlashSaleProductDetails productDetails, UUID buyerId, UUID orderId) {
+
+        AddAddressResponse addressResponse = buyerService.getBuyerAddressForCheckout(buyerId, productDetails.getShippingAddressId());
+
+        OrderAddress snapshotAddress = OrderAddress.builder()
+                .recipientName(addressResponse.getRecipientName())
+                .recipientPhoneNo(addressResponse.getRecipientPhoneNo())
+                .addressLine1(addressResponse.getAddressLine1())
+                .addressLine2(addressResponse.getAddressLine2())
+                .city(addressResponse.getCity())
+                .state(addressResponse.getState())
+                .pincode(addressResponse.getPincode())
+                .country(addressResponse.getCountry())
+                .build();
+
+
+        Orders order = Orders.builder()
+                .id(orderId)
+                .buyerId(buyerId)
+                .idempotencyKey("It Is Deprected")
+                .shippingAddressSnapshot(snapshotAddress)
+                .status(Orders.OrderStatus.PENDING)
+                .totalAmount(productDetails.getTotalPrice())
+                .build();
+
+
+        OrderItem orderItem = OrderItem.builder()
+                .productId(productDetails.getProductId())
+                .quantity(productDetails.getQuantity())
+                .unitPriceAtPurchase(productDetails.getTotalPrice().divide(BigDecimal.valueOf(productDetails.getQuantity())))
+                .subTotal(productDetails.getTotalPrice())
+                .isFlashSaleProduct(true)
+                .build();
+
+        orderRepository.save(order);
+        orderItemRepository.save(orderItem);
     }
 }

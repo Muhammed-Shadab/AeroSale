@@ -1,11 +1,14 @@
 package com.miniProject.AeroScale.flashsale.service;
 
+import com.miniProject.AeroScale.flashsale.dto.request.ProductDetails;
 import com.miniProject.AeroScale.flashsale.dto.request.SaleState;
 import com.miniProject.AeroScale.flashsale.dto.request.ScheduleFlashSaleRequest;
 import com.miniProject.AeroScale.flashsale.dto.response.SellerFlashSaleResponse;
 import com.miniProject.AeroScale.flashsale.entity.FlashSale;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 
 import java.util.Collection;
 import java.util.Map;
@@ -44,4 +47,6 @@ public interface FlashSaleService {
             int page,
             int size
     );
+
+    ResponseEntity<UUID> checkout(@Valid ProductDetails productDetails, UUID buyerId);
 }

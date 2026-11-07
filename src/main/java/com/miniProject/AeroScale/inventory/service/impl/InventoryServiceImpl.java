@@ -1,10 +1,10 @@
 package com.miniProject.AeroScale.inventory.service.impl;
 
 import com.miniProject.AeroScale.SellerModule.Entity.Seller;
+import com.miniProject.AeroScale.SellerModule.Repository.SellerRepository;
 import com.miniProject.AeroScale.SellerModule.Service.SellerService;
 import com.miniProject.AeroScale.flashsale.entity.FlashSale;
 import com.miniProject.AeroScale.flashsale.repository.FlashSaleRepository;
-import com.miniProject.AeroScale.flashsale.service.FlashSaleService;
 import com.miniProject.AeroScale.inventory.entity.Inventory;
 import com.miniProject.AeroScale.inventory.entity.InventoryReservation;
 import com.miniProject.AeroScale.inventory.repository.InventoryRepository;
@@ -12,9 +12,7 @@ import com.miniProject.AeroScale.inventory.repository.InventoryReservationReposi
 import com.miniProject.AeroScale.inventory.service.InventoryService;
 import com.miniProject.AeroScale.order.exception.ProductIsNotAvailable;
 import com.miniProject.AeroScale.product.entity.Product;
-import com.miniProject.AeroScale.product.exception.ProductNotFoundException;
 import com.miniProject.AeroScale.product.repository.ProductRepository;
-import com.miniProject.AeroScale.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -207,8 +205,5 @@ public class InventoryServiceImpl implements InventoryService {
         return res;
     }
 
-    public String test() {
-        return "working";
-    }
 
 }

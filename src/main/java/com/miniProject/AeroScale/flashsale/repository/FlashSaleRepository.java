@@ -72,8 +72,7 @@ public interface FlashSaleRepository extends JpaRepository<FlashSale, UUID> {
                    @Param("from") FlashSaleStatus from,
                    @Param("now") Instant now);
 
-    @Query("select f from FlashSale f WHERE f.productId = :product and f.status = 'ACTIVE'")
-    Optional<FlashSale> IsThisProductIsActive(@Param("product") Product product);
+
 
     @Query(
             value = """

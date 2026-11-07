@@ -1,9 +1,11 @@
 package com.miniProject.AeroScale.flashsale.controller;
 
+import com.miniProject.AeroScale.flashsale.dto.request.ProductDetails;
 import com.miniProject.AeroScale.flashsale.dto.request.ScheduleFlashSaleRequest;
 import com.miniProject.AeroScale.flashsale.dto.response.SellerFlashSaleResponse;
 import com.miniProject.AeroScale.flashsale.entity.FlashSale;
 import com.miniProject.AeroScale.flashsale.service.FlashSaleService;
+import jakarta.persistence.Id;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -49,6 +51,10 @@ public class FlashSaleController {
         Page<SellerFlashSaleResponse> response = flashSaleService.getSellerSales(sellerId, status, page, size);
 
         return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<UUID> CheckOut(@Valid ProductDetails productDetails, @AuthenticationPrincipal(expression = "id") UUID buyerId) {
+        return flashSaleService.checkout(productDetails, buyerId);
     }
 
 }
